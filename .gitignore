@@ -1,0 +1,7 @@
+__pycache__/
+.venv/
+.env
+*.pem
+.vercel/
+/zones.json
+/metrics.json

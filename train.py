@@ -69,7 +69,7 @@ def main():
     now["vol"] = (now.mag_std / now.mag_std.max() + now.n_recent10 / max(now.n_recent10.max(), 1)) / 2
     now["expected_exposed"] = now.risk * now.pop100                    # people within 100km x P(M6+)
     now["impact"] = (now.risk * np.log10(1 + now.pop100)); now["impact"] /= now.impact.max()
-    z = now[now.risk >= 0.5]
+    z = now[now.risk >= 0.1]
     json.dump([dict(lat=r.lat, lon=r.lon, risk=round(r.risk, 3), vol=round(r.vol, 3), maxmag=round(r.mag_max, 1),
                     pop_m=round(r.pop100/1e6, 2), impact=round(r.impact, 3), accel=round(r.accel, 3)) for r in z.itertuples()], open("zones.json", "w"))
     top = now.sort_values("expected_exposed", ascending=False).head(10)[["lat", "lon", "risk", "pop100", "expected_exposed"]].round(2)

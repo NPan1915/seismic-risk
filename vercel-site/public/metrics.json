@@ -9,7 +9,7 @@
     "auc": 0.833,
     "pr_auc": 0.679,
     "fold_auc_mean": 0.834,
-    "fold_auc_std": 0.026
+    "fold_auc_std": 0.025
    },
    {
     "model": "B. boundary only",
@@ -21,9 +21,9 @@
    {
     "model": "C. rate + boundary",
     "auc": 0.84,
-    "pr_auc": 0.684,
+    "pr_auc": 0.685,
     "fold_auc_mean": 0.842,
-    "fold_auc_std": 0.024
+    "fold_auc_std": 0.023
    },
    {
     "model": "D. full (+ magnitude/depth volatility)",
@@ -50,135 +50,135 @@
   "random_cv_auc": 0.851,
   "lift_vs_best_single": 0.024,
   "importance": {
-   "n_m6_hist": 0.0292,
+   "n_m6_hist": 0.0291,
    "n_recent10": 0.0187,
-   "n_hist": 0.014,
+   "n_hist": 0.0142,
    "n_prior10": 0.0091,
-   "depth_mean": 0.0089,
-   "mag_mean": 0.0079,
-   "mag_max": 0.0063,
+   "depth_mean": 0.0086,
+   "mag_mean": 0.0078,
+   "mag_max": 0.0062,
    "depth_std": 0.0041,
-   "dist_boundary_km": 0.0036,
-   "mag_std": 0.0019,
-   "rate_ratio": 0.0007
+   "dist_boundary_km": 0.0033,
+   "mag_std": 0.0018,
+   "rate_ratio": 0.0006
   }
  },
  "rate_change": {
-  "base_rate": 0.2085828343313373,
+  "base_rate": 0.20958083832335328,
   "table": [
    {
     "model": "rate only",
-    "auc": 0.649,
-    "pr_auc": 0.315,
-    "fold_auc_mean": 0.649,
-    "fold_auc_std": 0.027
+    "auc": 0.648,
+    "pr_auc": 0.303,
+    "fold_auc_mean": 0.646,
+    "fold_auc_std": 0.031
    },
    {
     "model": "rate + boundary",
-    "auc": 0.646,
-    "pr_auc": 0.312,
-    "fold_auc_mean": 0.645,
-    "fold_auc_std": 0.03
+    "auc": 0.651,
+    "pr_auc": 0.315,
+    "fold_auc_mean": 0.65,
+    "fold_auc_std": 0.037
    },
    {
     "model": "full",
-    "auc": 0.628,
-    "pr_auc": 0.3,
-    "fold_auc_mean": 0.628,
-    "fold_auc_std": 0.024
+    "auc": 0.633,
+    "pr_auc": 0.316,
+    "fold_auc_mean": 0.637,
+    "fold_auc_std": 0.025
    },
    {
     "model": "heuristic: persistence (recent/prior ratio)",
-    "auc": 0.367,
-    "pr_auc": 0.156,
+    "auc": 0.366,
+    "pr_auc": 0.157,
     "fold_auc_mean": NaN,
     "fold_auc_std": NaN
    }
   ],
   "importance": {
-   "rate_ratio": 0.0491,
-   "n_recent10": 0.0352,
-   "n_hist": 0.0111,
-   "n_prior10": 0.01,
-   "dist_boundary_km": 0.0041,
-   "mag_mean": 0.0004,
-   "depth_mean": -0.0012,
-   "mag_std": -0.0031,
-   "depth_std": -0.0041,
-   "n_m6_hist": -0.0053,
-   "mag_max": -0.0059
+   "rate_ratio": 0.0512,
+   "n_recent10": 0.0455,
+   "mag_mean": 0.0197,
+   "n_hist": 0.0123,
+   "n_prior10": 0.0086,
+   "mag_std": 0.0035,
+   "dist_boundary_km": 0.0024,
+   "depth_mean": 0.0004,
+   "depth_std": -0.0034,
+   "n_m6_hist": -0.0046,
+   "mag_max": -0.0074
   }
  },
  "top_exposure": [
   {
    "lat": 36.0,
    "lon": 140.0,
-   "risk": 0.91,
+   "risk": 0.9,
    "pop100": 54999163.0,
-   "expected_exposed": 49875829.95
+   "expected_exposed": 49643136.34
   },
   {
    "lat": -6.0,
    "lon": 106.0,
    "risk": 0.81,
    "pop100": 15394834.0,
-   "expected_exposed": 12499725.31
+   "expected_exposed": 12440142.81
   },
   {
    "lat": 34.0,
    "lon": 136.0,
    "risk": 0.72,
    "pop100": 12674089.0,
-   "expected_exposed": 9106441.24
+   "expected_exposed": 9063142.08
+  },
+  {
+   "lat": -34.0,
+   "lon": -70.0,
+   "risk": 0.7,
+   "pop100": 8021440.0,
+   "expected_exposed": 5648554.11
+  },
+  {
+   "lat": 14.0,
+   "lon": -90.0,
+   "risk": 0.98,
+   "pop100": 5682300.0,
+   "expected_exposed": 5587219.59
   },
   {
    "lat": 30.0,
    "lon": 104.0,
    "risk": 0.23,
    "pop100": 24413707.0,
-   "expected_exposed": 5688925.55
-  },
-  {
-   "lat": -34.0,
-   "lon": -70.0,
-   "risk": 0.71,
-   "pop100": 8021440.0,
-   "expected_exposed": 5688498.55
-  },
-  {
-   "lat": 14.0,
-   "lon": -90.0,
-   "risk": 0.99,
-   "pop100": 5682300.0,
-   "expected_exposed": 5572391.74
+   "expected_exposed": 5517029.58
   },
   {
    "lat": 4.0,
    "lon": -74.0,
    "risk": 0.46,
    "pop100": 10835949.0,
-   "expected_exposed": 4983408.04
+   "expected_exposed": 5029654.08
   },
   {
    "lat": 34.0,
    "lon": 132.0,
    "risk": 0.68,
    "pop100": 5723744.0,
-   "expected_exposed": 3885593.59
+   "expected_exposed": 3886878.64
   },
   {
    "lat": 4.0,
    "lon": -76.0,
    "risk": 0.73,
    "pop100": 5048622.0,
-   "expected_exposed": 3667442.41
+   "expected_exposed": 3680477.16
   },
   {
    "lat": 38.0,
    "lon": 28.0,
-   "risk": 0.53,
+   "risk": 0.52,
    "pop100": 6942065.0,
-   "expected_exposed": 3665912.33
+   "expected_exposed": 3633883.44
   }
  ]
 }

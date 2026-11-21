@@ -1,26 +1,82 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismic Risk Globe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--panel:#0d1220cc;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
-canvas{display:block}
-.hud{position:fixed;left:16px;top:calc(16px + env(safe-area-inset-top,0px));background:var(--panel);padding:12px 14px;border-radius:10px;width:270px;max-width:calc(100% - 32px);font-size:13px;line-height:1.4}
-.hud h1{font-size:15px;margin:0 0 4px}.hud p{margin:4px 0;color:var(--mut)}
-#tip{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--panel);padding:8px 12px;border-radius:8px;font-size:13px;max-width:min(420px,calc(100% - 32px))}
-label.b{display:inline-block;margin:6px 4px 0 0;padding:5px 9px;border:1px solid #334;border-radius:6px;cursor:pointer;font-size:12px;user-select:none}
-.bar{height:8px;border-radius:4px;background:linear-gradient(90deg,#ffc2b3,#ff2a2a,#a8001a);margin:8px 0 2px}
-.row{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
-input[type=range]{width:100%;margin:4px 0 0}
+:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+canvas{display:block;touch-action:none;cursor:grab}
+.c-grab canvas{cursor:grabbing}
+.glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+button{font:inherit;color:inherit}
+.hud{position:fixed;left:16px;top:calc(16px + env(safe-area-inset-top,0px));padding:14px 16px;border-radius:14px;width:270px;max-width:calc(100% - 84px)}
+.hud h1{font-size:15px;margin:0 0 4px;letter-spacing:.2px}.hud p{margin:5px 0;color:var(--mut)}
+.bar{height:8px;border-radius:4px;background:linear-gradient(90deg,#ffc2b3,#ff2a2a,#a8001a);margin:10px 0 3px}
+.row2{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
+#tip{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:9px 13px;border-radius:10px;max-width:min(420px,calc(100% - 100px))}
+.gear{position:fixed;right:16px;top:calc(16px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .35s,background .2s}
+.gear:hover{background:rgba(30,38,64,.85)}.gear[aria-expanded=true]{transform:rotate(60deg)}
+.gear svg{width:20px;height:20px;fill:none;stroke:var(--fg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.zoomk{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+.zoomk button{width:38px;height:38px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;padding:0}
+.zoomk button:hover{background:rgba(30,38,64,.85)}
+.panel{position:fixed;right:16px;top:calc(66px + env(safe-area-inset-top,0px));width:310px;max-width:calc(100% - 32px);max-height:calc(100% - 100px);overflow:auto;border-radius:16px;padding:6px 16px 14px;
+ opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+.panel.open{opacity:1;visibility:visible;transform:none}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:10px 0 4px}.ph b{font-size:14px}
+.link{background:none;border:0;color:var(--mut);cursor:pointer;font-size:12px;padding:2px 4px}.link:hover{color:var(--fg)}
+.sec{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
+.ph+.sec{border-top:0;margin-top:6px;padding-top:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;position:relative}
+.row.col{display:block;padding:6px 0}.rl{display:flex;justify-content:space-between}.rl b{font-weight:600;color:#ffb3a8;font-variant-numeric:tabular-nums}
+.seg{display:flex;background:rgba(255,255,255,.06);border-radius:9px;padding:3px}
+.seg button{background:none;border:0;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--mut);transition:background .2s,color .2s}
+.seg button.on{background:var(--acc);color:#fff}
+.sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw i{width:38px;height:22px;border-radius:11px;background:var(--track);position:relative;transition:background .2s;flex:none}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#cbd3e6;transition:transform .2s,background .2s}
+.sw input:checked+i{background:var(--acc)}.sw input:checked+i::after{transform:translateX(16px);background:#fff}
+.sw input:focus-visible+i,.gear:focus-visible,.seg button:focus-visible{outline:2px solid #ffb3a8;outline-offset:2px}
+.btn{border:1px solid var(--line);background:rgba(255,255,255,.06);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px}.btn:hover{background:rgba(255,255,255,.12)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:2px 0 0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--acc) var(--p,50%),var(--track) var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.4)}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--acc)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.4)}
+/* custom cursor: a dot that tracks exactly + a ring that trails it */
+.cursor-on,.cursor-on *{cursor:none!important}
+#curDot,#curRing{position:fixed;left:0;top:0;pointer-events:none;z-index:99;display:none;will-change:transform}
+#curDot{width:7px;height:7px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 10px 2px rgba(255,70,70,.75);transition:opacity .15s,width .15s,height .15s}
+#curRing{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);box-shadow:0 0 14px rgba(255,255,255,.12);transition:width .18s,height .18s,background .18s,border-color .18s,opacity .18s}
+.c-hover #curRing{width:48px;height:48px;background:rgba(255,70,70,.16);border-color:#ff6b6b}
+.c-hover #curDot{width:9px;height:9px}
+.c-grab #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.55)}.c-grab #curDot{width:5px;height:5px}
+.c-ui #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.6);background:none}.c-ui #curDot{opacity:.9}
+.c-out #curDot,.c-out #curRing{opacity:0}
 </style></head><body>
-<div class="hud"><h1>Seismic risk zones</h1>
-<p>Big circles group nearby zones; <b>zoom in</b> (scroll or +) to split them into individual zones. Color = <span id="legCap">volatility</span> of the area.</p>
-<div class="bar"></div><div class="row"><span>lower</span><span>higher</span></div>
-<div style="margin-top:8px">Min risk: <b id="minRL">30%</b><input id="minR" type="range" min="0" max="90" value="30"></div>
-<p id="src">Showing illustrative sample data.</p><p id="cnt"></p>
-<label class="b" id="modeBtn">Color: volatility</label><label class="b" id="spinBtn">Spin: on</label>
-<label class="b" id="zi">+</label><label class="b" id="zo">&minus;</label>
-<label class="b">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
-<div id="tip">Hover a circle or dot</div>
+<div class="hud glass"><h1>Seismic risk zones</h1>
+<p>Big circles group nearby zones. <b>Zoom in</b> (scroll or +) to split them apart. Shade = <span id="legCap">volatility</span> of the area.</p>
+<div class="bar"></div><div class="row2"><span>lower</span><span>higher</span></div>
+<p id="src">Showing illustrative sample data.</p><p id="cnt"></p></div>
+<button class="gear glass" id="gear" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+<div class="panel glass" id="panel" role="dialog" aria-label="Settings">
+ <div class="ph"><b>Settings</b><button class="link" id="resetBtn">Reset to defaults</button></div>
+ <div class="sec">Display</div>
+ <div class="row"><span>Color by</span><div class="seg" id="seg"><button data-m="vol">Volatility</button><button data-m="impact">Human impact</button></div></div>
+ <div class="row col"><div class="rl"><span>Minimum risk</span><b id="minRL"></b></div><input id="minR" type="range" min="0" max="90"></div>
+ <div class="row col"><div class="rl"><span>Grouping</span><b id="grpL"></b></div><input id="grp" type="range" min="0" max="200" step="10"></div>
+ <label class="row sw"><span>Grid lines</span><input id="gridSw" type="checkbox"><i></i></label>
+ <div class="sec">Motion</div>
+ <label class="row sw"><span>Auto-spin</span><input id="spinSw" type="checkbox"><i></i></label>
+ <div class="row col"><div class="rl"><span>Spin speed</span><b id="spdL"></b></div><input id="spd" type="range" min="0" max="25"></div>
+ <div class="row col"><div class="rl"><span>Glide after a fling</span><b id="glL"></b></div><input id="glide" type="range" min="0" max="100"></div>
+ <div class="sec">Interface</div>
+ <label class="row sw"><span>Custom cursor</span><input id="curSw" type="checkbox"><i></i></label>
+ <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
+</div>
+<div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
+<div id="tip" class="glass">Hover a circle or dot</div>
+<i id="curRing"></i><i id="curDot"></i>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // Coastlines: Natural Earth 110m land (public domain), simplified + delta-encoded in 0.1-degree units
@@ -46,7 +102,12 @@ for(let la=-60;la<=60;la+=30){const g=[];for(let lo=0;lo<=360;lo+=5)g.push(P(la,
 for(let lo=0;lo<360;lo+=30){const g=[];for(let la=-90;la<=90;la+=5)g.push(P(la,lo));lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(g),lm))}
 globe.add(lines);
 const dots=new THREE.Group();globe.add(dots);
-let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,vy=.0012,spin=true,lastMove=0;
+let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
+let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
+const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true};
+const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
+const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
 function rank(key){const s=zones.map(z=>z[key]).sort((a,b)=>a-b),n=s.length;
  zones.forEach(z=>{let lo=0,hi=n;while(lo<hi){const m=(lo+hi)>>1;if(s[m]<z[key])lo=m+1;else hi=m}z['r_'+key]=n>1?lo/(n-1):.5})}
@@ -66,7 +127,7 @@ function cluster(list,deg){
 const GEO=new THREE.SphereGeometry(1,14,10);
 function build(){while(dots.children.length)dots.remove(dots.children[0]);hov=null;
  const key=mode==='impact'?'r_impact':'r_vol',vis=zones.filter(z=>z.risk>=minRisk);
- for(const c of cluster(vis,LV[level][1])){const m=c.m,k=m.length,v=new THREE.Vector3();let t=0,rk=0,vo=0,im=0,mx=0,pp=0,ac=0;
+ for(const c of cluster(vis,LV[level][1]*gs)){const m=c.m,k=m.length,v=new THREE.Vector3();let t=0,rk=0,vo=0,im=0,mx=0,pp=0,ac=0;
   m.forEach(z=>{v.addScaledVector(z.v3,z.risk);t+=z[key];rk+=z.risk;vo+=z.vol;im+=z.impact;mx=Math.max(mx,z.maxmag);pp=Math.max(pp,z.pop_m||0);ac+=z.accel||0});
   const s=k===1?.7+Math.sqrt(m[0].risk)*.9:Math.min(11,1.8+1.15*Math.sqrt(k));   // bigger groups -> bigger circle
   const mesh=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:shade(t/k),transparent:k>1,opacity:k>1?.9:1}));
@@ -86,20 +147,57 @@ const fmt=u=>u.k>1
  :`Risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 max M${u.maxmag}`+(u.pop!==undefined?` \u00b7 ${u.pop}M people within 100 km`:'')+(u.accel?` \u00b7 rate-rise prob ${u.accel}`:'');
 function hover(cx,cy){const h=pick(cx,cy);if(hov&&hov!==h)hov.scale.setScalar(hov.userData.s);hov=h;
  if(h)h.scale.setScalar(h.userData.s*(h.userData.k>1?1.15:1.9));
- tip.textContent=h?fmt(h.userData):'Hover a circle or dot'}
-el.onpointerdown=e=>{drag=true;px=e.clientX;py=e.clientY;lastMove=performance.now();hover(e.clientX,e.clientY)};onpointerup=()=>drag=false;
-onpointermove=e=>{lastMove=performance.now();
- if(drag){globe.rotation.y+=(e.clientX-px)*.005;globe.rotation.x=Math.max(-1.4,Math.min(1.4,globe.rotation.x+(e.clientY-py)*.005));px=e.clientX;py=e.clientY}
- else hover(e.clientX,e.clientY)};
+ tip.textContent=h?fmt(h.userData):'Hover a circle or dot';cb.toggle('c-hover',!!h)}
+const ppr=()=>R*innerHeight/(2*Math.tan(Math.PI/8)*(cam.position.z-R));   // screen pixels per radian at the globe's surface, so the point you grab follows the cursor
+const clampW=w=>Math.max(-MAXW,Math.min(MAXW,w));
+el.onpointerdown=e=>{drag=true;wy=wx=0;px=e.clientX;py=e.clientY;lastMove=performance.now();hist=[{t:lastMove,x:px,y:py}];
+ try{el.setPointerCapture(e.pointerId)}catch(_){}cb.add('c-grab');hover(e.clientX,e.clientY)};
+const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=performance.now();hist=hist.filter(h=>n-h.t<100);
+ if(hist.length>1){const a=hist[0],b=hist[hist.length-1],dt=(b.t-a.t)/1000;
+  if(dt>.005){wy=clampW((b.x-a.x)/dt/ppr());wx=clampW((b.y-a.y)/dt/ppr())}}   // release velocity = recent pointer speed
+ hist=[]};
+onpointerup=release;onpointercancel=release;
+onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
+ const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip');cb.toggle('c-ui',!!ui);
+ if(drag){const k=1/ppr();globe.rotation.y+=(e.clientX-px)*k;globe.rotation.x=Math.max(-TILT,Math.min(TILT,globe.rotation.x+(e.clientY-py)*k));
+  px=e.clientX;py=e.clientY;hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
+ else if(ui)hover(-999,-999);else hover(e.clientX,e.clientY)};
 el.onwheel=e=>{e.preventDefault();zoom(e.deltaY*.3)};
 zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
-spinBtn.onclick=()=>{spin=!spin;spinBtn.textContent='Spin: '+(spin?'on':'off')};
-modeBtn.onclick=()=>{mode=mode==='vol'?'impact':'vol';modeBtn.textContent='Color: '+(mode==='vol'?'volatility':'human impact');legCap.textContent=mode==='vol'?'volatility':'human impact';build()};
-minR.oninput=()=>{minRisk=minR.value/100;minRL.textContent=minR.value+'%';build()};
+// ---- settings panel ----
+function syncUI(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
+ minR.value=S.minRisk;minRL.textContent=S.minRisk+'%';grp.value=S.grp;grpL.textContent=S.grp===0?'Off':S.grp+'%';
+ gridSw.checked=S.grid;spinSw.checked=S.spin;spd.value=S.spd;spdL.textContent=(S.spd/100*57.3).toFixed(0)+'\u00b0/s';
+ glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;
+ legCap.textContent=S.mode==='vol'?'volatility':'human impact';
+ document.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'))}
+function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;FRICTION=4*Math.pow(.15,S.glide/100);
+ const on=S.cursor&&FINE;cb.toggle('cursor-on',on);ringOn=on;curDot.style.display=curRing.style.display=on?'block':'none'}
+function change(p,rebuild){Object.assign(S,p);apply();if(rebuild)build();syncUI();save()}
+seg.onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(m)change({mode:m},true)};
+minR.oninput=()=>change({minRisk:+minR.value},true);grp.oninput=()=>change({grp:+grp.value},true);
+gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>change({spin:spinSw.checked});
+spd.oninput=()=>change({spd:+spd.value});glide.oninput=()=>change({glide:+glide.value});curSw.onchange=()=>change({cursor:curSw.checked});
+resetBtn.onclick=()=>change({...DEF},true);
+const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
+gear.onclick=e=>{e.stopPropagation();setOpen(!panel.classList.contains('open'))};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false)});
+onkeydown=e=>{if(e.key==='Escape')setOpen(false)};
+// ---- custom cursor ----
+function curMove(e){mx=e.clientX;my=e.clientY;if(rx<0){rx=mx;ry=my}cb.remove('c-out');curDot.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`}
+document.documentElement.onmouseleave=()=>cb.add('c-out');
 function setZones(j,msg){zones=j;prep();build();src.textContent=msg}
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
 onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)};
-globe.rotation.y=-2.4;globe.rotation.x=.3;prep();level=lvl();build();
+globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();prep();level=lvl();build();
 fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.')}).catch(()=>{});
-(function loop(){requestAnimationFrame(loop);if(!drag&&spin&&!hov&&performance.now()-lastMove>2500)globe.rotation.y+=vy;ren.render(scene,cam)})();
+let lastT=performance.now();
+function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+ if(ringOn){const a=1-Math.exp(-dt*16);rx+=(mx-rx)*a;ry+=(my-ry)*a;curRing.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`}
+ if(!drag){globe.rotation.y+=wy*dt;globe.rotation.x+=wx*dt;
+  const k=Math.exp(-FRICTION*dt);wy*=k;wx*=k;if(Math.abs(wy)<.02)wy=0;if(Math.abs(wx)<.02)wx=0;
+  if(globe.rotation.x>TILT){globe.rotation.x=TILT;wx=0}if(globe.rotation.x<-TILT){globe.rotation.x=-TILT;wx=0}
+  if(spin&&!hov&&now-lastMove>2500)globe.rotation.y+=AUTO*dt}
+ ren.render(scene,cam)}
+(function loop(){requestAnimationFrame(loop);tick(performance.now())})();
 </script></body></html>

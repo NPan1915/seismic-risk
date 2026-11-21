@@ -1,100 +1,97 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismic Risk Globe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;--cur:#ff5a5a;--font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--head:"Space Grotesk","Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#0a0b0d;--panel:#121316;--rule:#2b2d33;--fg:#e8e4da;--mut:#8d8a82;--acc:#e0a24a;--track:#2b2d33;--cur:#ff5a5a;
+--font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--head:"Newsreader",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.5 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
 canvas{display:block;touch-action:none;cursor:grab}
 .c-grab canvas{cursor:grabbing}
-.glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.glass{background:var(--panel);border:1px solid var(--rule);border-radius:4px}
 button{font:inherit;color:inherit}
-.hud{position:fixed;left:16px;top:calc(16px + env(safe-area-inset-top,0px));padding:14px 16px;border-radius:14px;width:270px;max-width:calc(100% - 84px)}
-.hud h1{font-size:15px;margin:0 0 4px;letter-spacing:.2px}.hud p{margin:5px 0;color:var(--mut)}
-.bar{height:8px;border-radius:4px;background:linear-gradient(90deg,#ffc2b3,#ff2a2a,#a8001a);margin:10px 0 3px}
+/* corner readout */
+.hud{position:fixed;left:18px;top:calc(16px + env(safe-area-inset-top,0px));max-width:calc(100% - 100px);text-shadow:0 1px 3px #000}
+.hud p{margin:0}#src{color:var(--fg)}#cnt{font:11.5px var(--mono);color:var(--mut);margin-top:2px}
 .row2{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
-#tip{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:9px 13px;border-radius:10px;max-width:min(420px,calc(100% - 100px))}
-.gear{position:fixed;right:16px;top:calc(16px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;display:grid;place-items:center;cursor:pointer;padding:0;transition:transform .35s,background .2s}
-.gear:hover{background:rgba(30,38,64,.85)}.gear[aria-expanded=true]{transform:rotate(60deg)}
-.gear svg{width:20px;height:20px;fill:none;stroke:var(--fg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.zoomk{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
-.zoomk button{width:38px;height:38px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;padding:0}
-.zoomk button:hover{background:rgba(30,38,64,.85)}
-.panel{position:fixed;right:16px;top:calc(66px + env(safe-area-inset-top,0px));width:310px;max-width:calc(100% - 32px);max-height:calc(100% - 100px);overflow:auto;border-radius:16px;padding:6px 16px 14px;
- opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+#tip{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:8px 12px;max-width:min(420px,calc(100% - 100px));font-size:12.5px}
+.gear{position:fixed;right:16px;top:calc(16px + env(safe-area-inset-bottom,0px) * 0 + env(safe-area-inset-top,0px));width:38px;height:38px;display:grid;place-items:center;cursor:pointer;padding:0}
+.gear:hover,.zoomk button:hover{border-color:var(--mut)}
+.gear svg{width:19px;height:19px;fill:none;stroke:var(--fg);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.zoomk{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column}
+.zoomk button{width:36px;height:36px;font-size:18px;line-height:1;cursor:pointer;padding:0}
+.zoomk button+button{border-top-color:transparent;border-radius:0 0 4px 4px}.zoomk button:first-child{border-radius:4px 4px 0 0}
+/* settings */
+.panel{position:fixed;right:16px;top:calc(62px + env(safe-area-inset-top,0px));width:310px;max-width:calc(100% - 32px);max-height:calc(100% - 96px);overflow:auto;padding:4px 16px 14px;
+ opacity:0;visibility:hidden;transform:translateY(-6px);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
 .panel.open{opacity:1;visibility:visible;transform:none}
-.ph{display:flex;justify-content:space-between;align-items:center;padding:10px 0 4px}.ph b{font-size:14px}
-.link{background:none;border:0;color:var(--mut);cursor:pointer;font-size:12px;padding:2px 4px}.link:hover{color:var(--fg)}
-.sec{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
-.ph+.sec{border-top:0;margin-top:6px;padding-top:0}
+.ph{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 2px}.ph b{font:500 19px var(--head)}
+.link{background:none;border:0;color:var(--mut);cursor:pointer;font-size:12px;padding:2px 0;text-decoration:underline;text-underline-offset:3px}.link:hover{color:var(--fg)}
+.sec{font:italic 500 14px var(--head);margin:16px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;position:relative}
-.row.col{display:block;padding:6px 0}.rl{display:flex;justify-content:space-between}.rl b{font-weight:600;color:#ffb3a8;font-variant-numeric:tabular-nums}
-.seg{display:flex;background:rgba(255,255,255,.06);border-radius:9px;padding:3px}
-.seg button{background:none;border:0;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--mut);transition:background .2s,color .2s}
-.seg button.on{background:var(--acc);color:#fff}
-.sws{display:flex;gap:10px;margin-top:8px}.sws button{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s}.sws button:hover{transform:scale(1.15)}.sws button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.45)}
-.dpanel{position:fixed;right:16px;top:calc(68px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:370px;max-width:calc(100% - 32px);border-radius:16px;padding:18px 18px 14px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(18px);transition:opacity .26s ease,transform .26s ease,visibility .26s}
+.row.col{display:block;padding:6px 0}.rl{display:flex;justify-content:space-between}.rl b{font:500 12px var(--mono);color:var(--acc)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.seg button{background:none;border:0;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--mut)}.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--fg);color:var(--bg);font-weight:500}
+.sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
+.sw i{width:34px;height:18px;border:1px solid var(--mut);border-radius:3px;position:relative;flex:none;transition:background .15s,border-color .15s}
+.sw i::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:2px;background:var(--mut);transition:transform .15s,background .15s}
+.sw input:checked+i{background:var(--acc);border-color:var(--acc)}.sw input:checked+i::after{transform:translateX(16px);background:var(--bg)}
+.sw input:focus-visible+i,.gear:focus-visible,.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{border:1px solid var(--mut);background:none;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:12px}.btn:hover{background:rgba(255,255,255,.07)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#14110a;font-weight:600}.btn.pri:hover{background:#ecb55f}
+.sws{display:flex;gap:8px;margin-top:8px}.sws button{width:22px;height:22px;border-radius:50%;border:1px solid var(--rule);cursor:pointer;padding:0}
+.sws button.on{outline:2px solid var(--fg);outline-offset:2px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;margin:2px 0 0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--acc) var(--p,50%),var(--track) var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:16px;margin-top:-7px;border-radius:2px;background:var(--fg);border:0}
+input[type=range]::-moz-range-track{height:2px;background:var(--track)}input[type=range]::-moz-range-progress{height:2px;background:var(--acc)}
+input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radius:2px;background:var(--fg)}
+/* details panel */
+.dpanel{position:fixed;right:16px;top:calc(62px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:370px;max-width:calc(100% - 32px);padding:20px 20px 14px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(14px);transition:opacity .26s ease,transform .26s ease,visibility .26s}
 .dpanel.open{opacity:1;visibility:visible;transform:none}
-.dpanel h2{margin:0 30px 2px 0;font-size:17px;line-height:1.25}.dpanel .sub{color:var(--mut);font-size:12px}
-.dx{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.08);cursor:pointer;font-size:17px;line-height:1;padding:0}.dx:hover{background:rgba(255,255,255,.16)}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}
-.tile{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
-.tile span{display:block;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px}
-.tile b{font-size:18px;font-variant-numeric:tabular-nums}.tile small{display:block;color:var(--mut);font-size:11px;line-height:1.3}
-.dh{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin:18px 0 6px}
-.ev{display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
-.mag{flex:none;width:46px;height:30px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:13px}
+.dpanel h2{margin:0 30px 3px 0;font:500 24px/1.15 var(--head);letter-spacing:-.01em}.dpanel .sub{color:var(--mut);font-size:12px}
+.dx{position:absolute;right:12px;top:12px;width:26px;height:26px;border:1px solid var(--rule);border-radius:3px;background:none;cursor:pointer;font-size:16px;line-height:1;padding:0}.dx:hover{border-color:var(--mut)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;margin:16px 0 2px;border-top:1px solid var(--rule)}
+.tile{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule)}.tile:nth-child(even){padding-left:12px;border-left:1px solid var(--rule)}
+.tile span{display:block;font-size:11.5px;color:var(--mut)}
+.tile b{display:block;font:500 23px/1.2 var(--head);letter-spacing:-.01em;font-variant-numeric:lining-nums tabular-nums}
+.tile small{display:block;color:var(--mut);font-size:11px;line-height:1.3;min-height:14px}
+.dh{font:italic 500 14.5px var(--head);margin:20px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.ev{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule)}
+.mag{flex:none;width:46px;height:28px;border-radius:3px;display:grid;place-items:center;font:600 12.5px var(--mono)}
 .ev .t{min-width:0}.ev .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ev .t small{color:var(--mut);font-size:11.5px}
-.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)}.kv span{color:var(--mut)}.kv b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
-.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--track);margin-top:6px}
-.leg{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11px;color:var(--mut);margin:5px 0 10px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
-.dec{display:flex;align-items:flex-end;gap:3px;height:56px;margin-top:6px}.dec div{flex:1;background:var(--acc);border-radius:2px 2px 0 0;min-height:2px;opacity:.88}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--rule)}.kv span{color:var(--mut)}.kv b{font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.stack{display:flex;height:8px;overflow:hidden;background:var(--track);margin-top:8px}
+.leg{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11px;color:var(--mut);margin:5px 0 8px}.leg i{display:inline-block;width:8px;height:8px;margin-right:4px}
+.dec{display:flex;align-items:flex-end;gap:2px;height:54px;margin-top:8px}.dec div{flex:1;background:var(--fg);opacity:.75;min-height:2px}
 .dec+.row2{margin-top:3px}.note{color:var(--mut);font-size:11.5px;margin:14px 0 0}
 .pan-open #tip{right:402px}@media(max-width:760px){.pan-open #tip{display:none}}
-.sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
-.sw i{width:38px;height:22px;border-radius:11px;background:var(--track);position:relative;transition:background .2s;flex:none}
-.sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#cbd3e6;transition:transform .2s,background .2s}
-.sw input:checked+i{background:var(--acc)}.sw input:checked+i::after{transform:translateX(16px);background:#fff}
-.sw input:focus-visible+i,.gear:focus-visible,.seg button:focus-visible{outline:2px solid #ffb3a8;outline-offset:2px}
-.btn{border:1px solid var(--line);background:rgba(255,255,255,.06);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:12px}.btn:hover{background:rgba(255,255,255,.12)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:2px 0 0;cursor:pointer}
-input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--acc) var(--p,50%),var(--track) var(--p,50%))}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.4)}
-input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--track)}
-input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--acc)}
-input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.4)}
 /* custom cursor: a dot that tracks exactly + a ring that trails it */
 .cursor-on,.cursor-on *{cursor:none!important}
 #curDot,#curRing{position:fixed;left:0;top:0;pointer-events:none;z-index:99;display:none;will-change:transform}
-#curDot{width:7px;height:7px;border-radius:50%;background:var(--cur);box-shadow:0 0 10px 2px color-mix(in srgb,var(--cur) 75%,transparent);transition:opacity .15s,width .15s,height .15s}
-#curRing{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);box-shadow:0 0 14px rgba(255,255,255,.12);transition:width .18s,height .18s,background .18s,border-color .18s,opacity .18s}
-.c-hover #curRing{width:48px;height:48px;background:color-mix(in srgb,var(--cur) 18%,transparent);border-color:var(--cur)}
-.c-hover #curDot{width:9px;height:9px}
-.c-grab #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.55)}.c-grab #curDot{width:5px;height:5px}
-.c-ui #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.6);background:none}.c-ui #curDot{opacity:.9}
+#curDot{width:5px;height:5px;border-radius:50%;background:var(--cur);transition:opacity .15s,width .15s,height .15s}
+#curRing{width:28px;height:28px;border-radius:50%;border:1px solid rgba(232,228,218,.85);transition:width .18s,height .18s,border-color .18s,opacity .18s}
+.c-hover #curRing{width:40px;height:40px;border-color:var(--cur)}.c-hover #curDot{width:7px;height:7px}
+.c-grab #curRing{width:20px;height:20px;border-color:rgba(232,228,218,.5)}.c-grab #curDot{width:4px;height:4px}
+.c-ui #curRing{width:18px;height:18px;border-color:rgba(232,228,218,.6)}
 .c-out #curDot,.c-out #curRing{opacity:0}
-/* ---- look & feel (fonts are the --font / --head / --mono variables at the top) ---- */
-.glass{background:linear-gradient(180deg,rgba(24,31,52,.78),rgba(12,16,30,.78));border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 38px rgba(0,0,0,.42)}
-.hud h1,.dpanel h2,.ph b{font-family:var(--head);font-weight:600;letter-spacing:-.01em}
-.hud h1{font-size:17px;display:flex;align-items:center;gap:9px}
-.hud h1::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);flex:none}
-.dpanel h2{font-size:19px}
-.sec,.dh,.tile span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;font-weight:600}
-.sec,.dh{display:flex;align-items:center;gap:8px}
-.sec::before,.dh::before{content:"";width:12px;height:2px;background:var(--acc);border-radius:1px;flex:none}
-.tile b,.kv b,.rl b,.mag,.row2,#cnt{font-family:var(--mono)}
-.tile b{font-size:17px;font-weight:600;letter-spacing:-.02em}.rl b,.kv b{font-size:12px}
-.tile{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border-radius:12px}
-.mag{font-weight:600;border-radius:9px;letter-spacing:-.02em;font-size:12.5px}
-.ev,.kv{border-top-color:rgba(255,255,255,.07)}
-.seg{border-radius:10px}.seg button{border-radius:8px;font-weight:500}.btn{border-radius:9px}
-.bar{height:6px}#tip{border-radius:12px}
+/* tutorial */
+#tourBlock{position:fixed;inset:0;z-index:60;display:none}#tourBlock.on{display:block}
+#tourHL{position:fixed;z-index:61;pointer-events:none;border-radius:3px;border:1.5px solid var(--acc);box-shadow:0 0 0 9999px rgba(5,6,8,.7);opacity:0;visibility:hidden;transition:left .22s,top .22s,width .22s,height .22s,opacity .22s,visibility .22s}
+#tourHL.on{opacity:1;visibility:visible}
+#tourPing{position:fixed;left:0;top:0;z-index:55;pointer-events:none;display:none}
+#tourPing::after{content:"";position:absolute;inset:0;border:1.5px solid var(--fg);border-radius:50%;animation:ping 1.5s ease-out infinite}
+@keyframes ping{0%{transform:scale(.7);opacity:.95}100%{transform:scale(1.7);opacity:0}}
+.tourcard{position:fixed;z-index:70;width:320px;padding:16px 18px 14px;border-left:3px solid var(--acc);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .22s,transform .22s,visibility .22s,left .25s,top .25s}
+.tourcard.on{opacity:1;visibility:visible;transform:none}
+.tourcard h3{font:500 19px/1.25 var(--head);margin:2px 0 6px}.tourcard p{margin:0;color:#cfcabd}.tourcard .tsub{margin-top:8px;color:var(--mut);font-size:12px}
+.tstep{font:500 10.5px var(--mono);color:var(--acc);min-height:12px}
+.tbtn{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
 </style></head><body>
-<div class="hud glass"><h1>Seismic risk zones</h1>
-<p>Big circles group nearby zones. <b>Zoom in</b> (scroll or +) to split them apart. Shade = <span id="legCap">volatility</span> of the area.</p>
-<div class="bar"></div><div class="row2"><span>lower</span><span>higher</span></div>
-<p id="src">Showing illustrative sample data.</p><p id="cnt"></p></div>
+<div class="hud"><p id="src"></p><p id="cnt"></p></div>
 <button class="gear glass" id="gear" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 <div class="panel glass" id="panel" role="dialog" aria-label="Settings">
  <div class="ph"><b>Settings</b><button class="link" id="resetBtn">Reset to defaults</button></div>
@@ -112,11 +109,16 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
  <div class="sec">Interface</div>
  <label class="row sw"><span>Custom cursor</span><input id="curSw" type="checkbox"><i></i></label>
  <div class="row col"><div class="rl"><span>Cursor color</span></div><div class="sws" id="sws"></div></div>
+ <label class="row sw"><span>Show tutorial on load</span><input id="tutSw" type="checkbox"><i></i></label>
+ <div class="row"><span>Tutorial</span><button class="btn" id="replayBtn">Replay</button></div>
  <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
 </div>
 <aside class="dpanel glass" id="detail" aria-hidden="true"><button class="dx" id="dClose" aria-label="Close panel">&times;</button><div id="dBody"></div></aside>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
+<div id="tourBlock"></div><div id="tourHL"></div><div id="tourPing"></div>
+<div class="tourcard glass" id="tourCard" role="dialog" aria-live="polite"><div class="tstep" id="tStep"></div><h3 id="tTitle"></h3><p id="tText"></p><p class="tsub" id="tSub"></p>
+ <div class="tbtn"><button class="link" id="tSkip">Skip tour</button><span><button class="btn" id="tBack">Back</button> <button class="btn pri" id="tNext">Next</button></span></div></div>
 <i id="curRing"></i><i id="curDot"></i>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -143,10 +145,10 @@ for(let la=-60;la<=60;la+=30){const g=[];for(let lo=0;lo<=360;lo+=5)g.push(P(la,
 for(let lo=0;lo<360;lo+=30){const g=[];for(let la=-90;la<=90;la+=5)g.push(P(la,lo));lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(g),lm))}
 globe.add(lines);
 const dots=new THREE.Group();globe.add(dots);
-let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
+let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,tour={on:false,i:0,el:null},DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a'};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a',tutorial:true};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
@@ -184,8 +186,7 @@ function pick(cx,cy){let best=null,bd=1e9;globe.updateMatrixWorld(true);
   const dist=cam.position.distanceTo(v3),pr=m.userData.s*innerHeight/(2*Math.tan(Math.PI/8)*dist),thr=Math.max(14,pr+6);
   const p=v3.clone().project(cam),d=Math.hypot((p.x+1)/2*innerWidth-cx,(1-p.y)/2*innerHeight-cy);if(d<thr&&d<bd){bd=d;best=m}});return best}
 const dm=(v,p,n)=>Math.abs(Math.round(v))+'\u00b0'+(v>=0?p:n);
-const popText=n=>n>=1e6?'~'+(n/1e6).toFixed(n>=1e7?0:1)+' million':n>=1000?'~'+(Math.round(n/1000)*1000).toLocaleString('en-US'):null;
-const popTip=(n,pre)=>n===undefined?'':' \u00b7 '+(popText(n)?pre+popText(n)+' people in cities (15k+) within 100 km':'no cities of 15,000+ within 100 km');
+const popTip=(n,pre)=>n===undefined?'':' \u00b7 '+pre+Math.round(n).toLocaleString('en-US')+' people within 100 km';
 const fmt=u=>u.k>1
  ?`${u.k} zones \u00b7 avg risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 impact ${u.impact.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'up to ')+' \u00b7 zoom in to split'
  :`Cell ${dm(u.lat,'N','S')} ${dm(u.lon,'E','W')} \u00b7 risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'')+(u.accel?` \u00b7 rate-rise chance ${u.accel*100|0}%`:'');
@@ -205,7 +206,7 @@ const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=lastCl
  hist=[]};
 onpointerup=release;onpointercancel=release;
 onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
- const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel');cb.toggle('c-ui',!!ui);
+ const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel,.tourcard,#tourBlock');cb.toggle('c-ui',!!ui);
  if(drag){const k=1/ppr();globe.rotation.y+=(e.clientX-px)*k;globe.rotation.x=Math.max(-TILT,Math.min(TILT,globe.rotation.x+(e.clientY-py)*k));
   px=e.clientX;py=e.clientY;if(downInfo&&Math.hypot(px-downInfo.x,py-downInfo.y)>6)closeDetail();hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
  else if(ui)hover(-999,-999);else hover(e.clientX,e.clientY)};
@@ -216,8 +217,8 @@ zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
 function syncUI(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
  minR.value=S.minRisk;minRL.textContent=S.minRisk+'%';grp.value=S.grp;grpL.textContent=S.grp===0?'Off':S.grp+'%';
  gridSw.checked=S.grid;spinSw.checked=S.spin;spd.value=S.spd;spdL.textContent=(S.spd/100*57.3).toFixed(0)+'\u00b0/s';
- glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
- legCap.textContent=S.mode==='vol'?'volatility':'human impact';
+ glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;tutSw.checked=S.tutorial;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
+ 
  document.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'))}
 function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;hoverPause=S.hoverPause;resumeMs=S.resume>=10?1e15:S.resume*1000;document.documentElement.style.setProperty('--cur',S.curColor);FRICTION=4*Math.pow(.15,S.glide/100);
  const on=S.cursor&&FINE;cb.toggle('cursor-on',on);ringOn=on;curDot.style.display=curRing.style.display=on?'block':'none'}
@@ -227,10 +228,11 @@ minR.oninput=()=>change({minRisk:+minR.value},true);grp.oninput=()=>change({grp:
 gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>{lastClick=-1e18;change({spin:spinSw.checked})};hovSw.onchange=()=>change({hoverPause:hovSw.checked});resumeR.oninput=()=>change({resume:+resumeR.value});
 spd.oninput=()=>change({spd:+spd.value});glide.oninput=()=>change({glide:+glide.value});curSw.onchange=()=>change({cursor:curSw.checked});
 resetBtn.onclick=()=>change({...DEF},true);
+tutSw.onchange=()=>change({tutorial:tutSw.checked});replayBtn.onclick=()=>{setOpen(false);tourEnd();closeDetail(true);tourGo(0)};
 const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
 gear.onclick=e=>{e.stopPropagation();setOpen(!panel.classList.contains('open'))};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false);if(e.target!==el&&!e.target.closest('.dpanel'))closeDetail()});   // clicking anything except the details panel closes it
-onkeydown=e=>{if(e.key==='Escape'){setOpen(false);closeDetail()}};
+onkeydown=e=>{if(e.key==='Escape'){if(tour.on){tourEnd();return}setOpen(false);closeDetail()}};
 // ---- details panel ----
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const magBg=m=>m>=8?'#a8001a':m>=7?'#e5383b':m>=6?'#ff6b4a':m>=5?'#ff9f68':'#ffc2b3';
@@ -246,43 +248,84 @@ function agg(u){const C=DET&&DET.cells,ds=C?u.keys.map(k=>C[k]).filter(Boolean):
   last:ds.map(d=>d.last).sort().pop(),rec:evs('rec').sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6),big:evs('big').sort((a,b)=>b[1]-a[1]||b[0].localeCompare(a[0])).slice(0,3)}}
 function renderDetail(u){const A=agg(u),M=u.members,pc=f=>Math.round(M.reduce((s,z)=>s+z['r_'+f],0)/M.length*100),c=M[0];
  const name=A&&A.big[0]?region(A.big[0][3]):'',coord=u.k===1?`${Math.abs(c.lat)}\u00b0${c.lat<0?'S':'N'}, ${Math.abs(c.lon)}\u00b0${c.lon<0?'W':'E'} \u00b7 2\u00b0 zone`:`${u.k} zones grouped \u00b7 zoom in to split`;
- const tile=(l,v,t)=>`<div class="tile"><span>${l}</span><b>${v}</b><small>${t}</small></div>`;
- const ppl=u.pop===undefined?'\u2014':u.pop>=1?u.pop.toFixed(1)+'M':Math.round(u.pop*1000)+'K';
- let h=`<h2>${esc(name||(u.k>1?'Grouped zones':'Seismic zone'))}</h2><div class="sub">${coord}</div><div class="tiles">`+
-  tile('Risk \u00b7 10 yr, M6+',(u.risk*100|0)+'%','model score')+tile('Volatility',u.vol.toFixed(2),pc('vol')+'th percentile')+
-  tile('Human impact',u.impact.toFixed(2),pc('impact')+'th percentile')+tile('People within 100 km',ppl,u.k>1?'largest in group':'cities of 15k+')+
-  tile('Rate-rise chance',u.accel>0?(u.accel*100|0)+'%':'\u2014','M4.5+ rate \u22651.5\u00d7, next 10 yr')+tile('Largest on record','M'+u.maxmag.toFixed(1),'in model data')+'</div>';
+ const tile=(l,v,t,k)=>`<div class="tile" data-t="${k}"><span>${l}</span><b>${v}</b><small>${t}</small></div>`;
+ const ppl=u.pop===undefined?'\u2014':Math.round(u.pop).toLocaleString('en-US');
+ let h=`<div data-t="loc"><h2>${esc(name||(u.k>1?'Grouped zones':'Seismic zone'))}</h2><div class="sub">${coord}</div></div><div class="tiles">`+
+  tile('Risk \u00b7 10 yr, M6+',(u.risk*100|0)+'%','model score','risk')+tile('Volatility',u.vol.toFixed(2),pc('vol')+'th percentile','vol')+
+  tile('Human impact',u.impact.toFixed(2),pc('impact')+'th percentile','impact')+tile('People within 100 km',ppl,u.k>1?'largest in group':'','people')+
+  tile('Rate-rise chance',u.accel>0?(u.accel*100|0)+'%':'\u2014','M4.5+ rate \u22651.5\u00d7, next 10 yr','rate')+tile('Largest on record','M'+u.maxmag.toFixed(1),'in model data','largest')+'</div>';
  if(A){const tr=A.p10?Math.round((A.r10/A.p10-1)*100):null;
-  h+=`<div class="dh">Biggest ever recorded</div>${A.big.map(evRow).join('')}<div class="dh">Recent activity</div>${A.rec.map(evRow).join('')}<div class="dh">Telemetry</div>`+
+  h+=`<div data-t="big"><div class="dh">Biggest ever recorded</div>${A.big.map(evRow).join('')}</div><div data-t="rec"><div class="dh">Recent activity</div>${A.rec.map(evRow).join('')}</div><div data-t="tel"><div class="dh">Telemetry</div>`+
    kv('Recorded events since 1900',A.n.toLocaleString())+kv('Magnitude 6+ / 7+',A.n6.toLocaleString()+' / '+A.n7.toLocaleString())+kv('Last event',A.last?ago(A.last):'\u2014')+kv('Average depth',Math.round(A.dm)+' km')+
    kv('M4.5+ events, last 10 yr vs prior 10',A.r10+' vs '+A.p10+(tr===null?'':' ('+(tr>=0?'+':'')+tr+'%)'))+
-   `<div class="dh">Magnitude mix</div>`+bar(A.mb,['#ffc2b3','#ff9f68','#e5383b','#a8001a'],['<5','5\u20136','6\u20137','7+'])+
-   `<div class="dh" style="margin-top:6px">Depth profile</div>`+bar(A.dp,['#7dd3fc','#38bdf8','#1d4ed8'],['Shallow <70 km','Mid 70\u2013300','Deep >300'])+
-   `<div class="dh" style="margin-top:6px">M5+ events per decade</div><div class="dec">${A.dec.map((v,i)=>`<div style="height:${Math.max(4,v/(Math.max(...A.dec)||1)*100)}%" title="${1900+i*10}s: ${v}"></div>`).join('')}</div><div class="row2"><span>1900s</span><span>2020s</span></div>`+
+   `</div><div data-t="mag"><div class="dh">Magnitude mix</div>`+bar(A.mb,['#ffc2b3','#ff9f68','#e5383b','#a8001a'],['<5','5\u20136','6\u20137','7+'])+
+   `</div><div data-t="depth"><div class="dh" style="margin-top:6px">Depth profile</div>`+bar(A.dp,['#7dd3fc','#38bdf8','#1d4ed8'],['Shallow <70 km','Mid 70\u2013300','Deep >300'])+
+   `</div><div data-t="dec"><div class="dh" style="margin-top:6px">M5+ events per decade</div><div class="dec">${A.dec.map((v,i)=>`<div style="height:${Math.max(4,v/(Math.max(...A.dec)||1)*100)}%" title="${1900+i*10}s: ${v}"></div>`).join('')}</div><div class="row2"><span>1900s</span><span>2020s</span></div></div>`+
    (u.k>1?`<p class="note">Totals and event lists combine all ${u.k} zones in this group.</p>`:'')+
    `<p class="note">Source: USGS ComCat \u00b7 M4.5+ (M5.5+ before 1973) \u00b7 updated ${esc(DET.generated||'')}</p>`}
  else h+=`<p class="note">${DET===null&&detTried?'Detailed event history was not found (details.json). Run train.py to generate it.':'Loading event history\u2026'}</p>`;
  dBody.innerHTML=h}
 async function loadDet(){if(detTried)return;detTried=true;try{const r=await fetch('details.json');if(r.ok)DET=await r.json()}catch(_){}}
-function closeDetail(){if(!detail.classList.contains('open'))return;detail.classList.remove('open');detail.setAttribute('aria-hidden','true');cb.remove('pan-open');if(OUT.parent)OUT.parent.remove(OUT)}
+function closeDetail(force){if(!force&&tour.on&&tour.i>0)return;if(!detail.classList.contains('open'))return;detail.classList.remove('open');detail.setAttribute('aria-hidden','true');cb.remove('pan-open');if(OUT.parent)OUT.parent.remove(OUT)}
 async function openDetail(m){setOpen(false);m.add(OUT);detail.classList.add('open');detail.setAttribute('aria-hidden','false');cb.add('pan-open');renderDetail(m.userData);detail.scrollTop=0;
- if(!detTried){await loadDet();if(OUT.parent===m)renderDetail(m.userData)}}
-dClose.onclick=closeDetail;
+ if(!detTried){await loadDet();if(OUT.parent===m)renderDetail(m.userData)}
+ if(tour.on&&tour.i===0)tourGo(1)}
+dClose.onclick=()=>closeDetail();
+// ---- tutorial: click a dot, then a guided tour of the details panel ----
+const STEPS=[
+ {title:'Welcome',text:'Click any circle or dot on the globe to get started.',sub:'Big circles group nearby zones; zoom in (scroll or +) to split them. Deeper red means higher volatility or human impact, which you can switch in Settings.'},
+ {sel:'loc',title:'The location',text:'This is where you are looking. A single dot is a 2\u00b0 \u00d7 2\u00b0 zone (about 220 km across), named after the biggest earthquake ever recorded there. A big circle groups several nearby zones.'},
+ {sel:'risk',title:'Risk',text:"The model's score for an M6+ earthquake striking within the next 10 years. Use it to compare places with each other; it is a ranking, not a literal probability."},
+ {sel:'vol',title:'Volatility',text:"How erratic the area's seismic behavior is: how widely its earthquake sizes vary and how active it has been lately. The percentile compares it to every other zone, so 90th means more volatile than 90% of them."},
+ {sel:'impact',title:'Human impact',text:'Combines risk with how many people live nearby, to show where a big earthquake would affect the most people. A quiet fault beside a huge city can outrank a busy fault in empty country.'},
+ {sel:'people',title:'People within 100 km',text:'The estimated number of people living within 100 km of this spot, based on city populations. For a group of zones it shows the highest count among them.'},
+ {sel:'rate',title:'Rate-rise chance',text:"The model's estimate that this area's rate of M4.5+ earthquakes climbs to at least 1.5\u00d7 its current level over the next 10 years. A dash means there is not enough recent activity to judge."},
+ {sel:'largest',title:'Largest on record',text:'The strongest earthquake in the dataset for this area.'},
+ {sel:'big',title:'Biggest ever recorded',text:'The three strongest earthquakes here since 1900, with date, depth and the nearest place. Before 1973 only M5.5 and up were reliably recorded.'},
+ {sel:'rec',title:'Recent activity',text:'The six most recent earthquakes in the area: magnitude, how long ago, and how deep. Refreshed weekly.'},
+ {sel:'tel',title:'Telemetry',text:'Totals since 1900: how many events were recorded, how many were M6+ and M7+, when the last one happened, the average depth, and how the last 10 years compare with the 10 before.'},
+ {sel:'mag',title:'Magnitude mix',text:'The share of this area\u2019s earthquakes in each size band, from small (under 5) to major (7+). Hover a segment for the exact count.'},
+ {sel:'depth',title:'Depth profile',text:'Shallow earthquakes (under 70 km) tend to do the most damage near the surface; deep ones (over 300 km) are usually felt more weakly over a wider area.'},
+ {sel:'dec',title:'Earthquakes per decade',text:'M5+ events in each decade from the 1900s to the 2020s. Hover a bar for the exact count. Recent decades look busier partly because modern instruments record more.'},
+ {title:"You're all set",text:'Click anywhere outside this panel to close it, drag the globe to spin it, scroll or use + / \u2212 to zoom, and open \u2699 Settings to change colors, grouping and more. You can replay this tutorial from Settings.'}];
+const tq=k=>detail.querySelector(`[data-t="${k}"]`);
+function tourEnd(){tour.on=false;tourBlock.classList.remove('on');tourHL.classList.remove('on');tourCard.classList.remove('on');tourPing.style.display='none'}
+function tourPlace(el){const W=innerWidth,H=innerHeight,cw=tourCard.offsetWidth||320,ch=tourCard.offsetHeight||190,st=tourCard.style;
+ if(el){const r=el.getBoundingClientRect(),p=6;Object.assign(tourHL.style,{left:r.left-p+'px',top:r.top-p+'px',width:r.width+p*2+'px',height:r.height+p*2+'px'})}
+ if(W<820){st.left='16px';st.top=(H-ch-16)+'px';st.width=(W-32)+'px';return}
+ st.width='320px';
+ if(el){const r=el.getBoundingClientRect(),pr=detail.getBoundingClientRect();st.left=Math.max(16,pr.left-cw-18)+'px';st.top=Math.max(76,Math.min(H-ch-16,r.top+r.height/2-ch/2))+'px'}
+ else{st.left=(W-cw)/2+'px';st.top=(H-ch-28)+'px'}}
+function tourGo(i,dir=1){tour.on=true;tour.i=i;const st=STEPS[i],el=st.sel?tq(st.sel):null;
+ if(st.sel&&!el){const j=i+dir;return j>=0&&j<STEPS.length?tourGo(j,dir):tourEnd()}   // skip sections that have no data
+ tour.el=el;tTitle.textContent=st.title;tText.textContent=st.text;tSub.textContent=st.sub||'';tSub.style.display=st.sub?'block':'none';
+ tStep.textContent=i?`STEP ${i} OF ${STEPS.length-1}`:'WELCOME';tBack.style.display=i>1?'inline-block':'none';tNext.style.display=i?'inline-block':'none';tNext.textContent=i===STEPS.length-1?'Done':'Next';
+ tourCard.classList.add('on');tourBlock.classList.toggle('on',i>0);tourHL.classList.toggle('on',!!el);if(i>0)tourPing.style.display='none';
+ if(el){el.scrollIntoView({block:'center',behavior:'smooth'});const t0=performance.now();(function f(){tourPlace(el);if(tour.on&&tour.i===i&&performance.now()-t0<700)requestAnimationFrame(f)})()}else tourPlace(null)}
+function pingUpdate(){let b=null;globe.updateMatrixWorld(true);
+ dots.children.forEach(m=>{m.getWorldPosition(v3);if(v3.dot(cam.position)<R*R*1.05)return;const p=v3.clone().project(cam),x=(p.x+1)/2*innerWidth,y=(1-p.y)/2*innerHeight;
+  if(x<90||x>innerWidth-90||y<90||y>innerHeight-90||(x<320&&y<340))return;const sc=m.userData.k*1e3+m.userData.s;if(!b||sc>b.sc)b={sc,x,y,s:m.userData.s}});
+ if(!b){tourPing.style.display='none';return}tourPing.style.display='block';tourPing.style.transform=`translate(${b.x}px,${b.y}px) translate(-50%,-50%)`;
+ tourPing.style.width=tourPing.style.height=(b.s*innerHeight/(2*Math.tan(Math.PI/8)*cam.position.z)*2+30)+'px'}
+tNext.onclick=()=>tour.i>=STEPS.length-1?tourEnd():tourGo(tour.i+1,1);tBack.onclick=()=>tourGo(tour.i-1,-1);tSkip.onclick=tourEnd;
 // ---- custom cursor ----
 function curMove(e){mx=e.clientX;my=e.clientY;if(rx<0){rx=mx;ry=my}cb.remove('c-out');curDot.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`}
 document.documentElement.onmouseleave=()=>cb.add('c-out');
 function setZones(j,msg){closeDetail();zones=j;prep();build();src.textContent=msg}
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
-onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)};
+onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);if(tour.on)tourPlace(tour.el)};
 globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();prep();level=lvl();build();
-fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.')}).catch(()=>{});
+const noLive=()=>{src.textContent='Live data unavailable \u00b7 showing sample zones'};
+fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.');else noLive()}).catch(noLive);
+if(S.tutorial)setTimeout(()=>tourGo(0),900);   // tutorial runs on every load (turn off in Settings)
 let lastT=performance.now();
 function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
+ if(tour.on&&tour.i===0)pingUpdate();
  if(ringOn){const a=1-Math.exp(-dt*16);rx+=(mx-rx)*a;ry+=(my-ry)*a;curRing.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`}
  if(!drag){globe.rotation.y+=wy*dt;globe.rotation.x+=wx*dt;
   const k=Math.exp(-FRICTION*dt);wy*=k;wx*=k;if(Math.abs(wy)<.02)wy=0;if(Math.abs(wx)<.02)wx=0;
   if(globe.rotation.x>TILT){globe.rotation.x=TILT;wx=0}if(globe.rotation.x<-TILT){globe.rotation.x=-TILT;wx=0}
-  if(spin&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
+  if(spin&&!(tour.on&&tour.i>0)&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
  ren.render(scene,cam)}
 (function loop(){requestAnimationFrame(loop);tick(performance.now())})();
 </script></body></html>

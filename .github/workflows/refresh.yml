@@ -18,5 +18,5 @@ jobs:
       - name: Commit updated data
         run: |
           git config user.name "refresh-bot"; git config user.email "refresh-bot@users.noreply.github.com"
-          git add vercel-site/public/zones.json vercel-site/public/metrics.json
+          git add vercel-site/public/zones.json vercel-site/public/metrics.json vercel-site/public/details.json
           git diff --cached --quiet || (git commit -m "Update zones $(date -u +%F)" && git push)

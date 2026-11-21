@@ -1,9 +1,11 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismic Risk Globe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;--cur:#ff5a5a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;--cur:#ff5a5a;--font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--head:"Space Grotesk","Inter",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.5 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
 canvas{display:block;touch-action:none;cursor:grab}
 .c-grab canvas{cursor:grabbing}
 .glass{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -32,6 +34,24 @@ button{font:inherit;color:inherit}
 .seg button{background:none;border:0;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--mut);transition:background .2s,color .2s}
 .seg button.on{background:var(--acc);color:#fff}
 .sws{display:flex;gap:10px;margin-top:8px}.sws button{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s}.sws button:hover{transform:scale(1.15)}.sws button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.45)}
+.dpanel{position:fixed;right:16px;top:calc(68px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:370px;max-width:calc(100% - 32px);border-radius:16px;padding:18px 18px 14px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(18px);transition:opacity .26s ease,transform .26s ease,visibility .26s}
+.dpanel.open{opacity:1;visibility:visible;transform:none}
+.dpanel h2{margin:0 30px 2px 0;font-size:17px;line-height:1.25}.dpanel .sub{color:var(--mut);font-size:12px}
+.dx{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(255,255,255,.08);cursor:pointer;font-size:17px;line-height:1;padding:0}.dx:hover{background:rgba(255,255,255,.16)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}
+.tile{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tile span{display:block;font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px}
+.tile b{font-size:18px;font-variant-numeric:tabular-nums}.tile small{display:block;color:var(--mut);font-size:11px;line-height:1.3}
+.dh{font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin:18px 0 6px}
+.ev{display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.mag{flex:none;width:46px;height:30px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:13px}
+.ev .t{min-width:0}.ev .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ev .t small{color:var(--mut);font-size:11.5px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid var(--line)}.kv span{color:var(--mut)}.kv b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.stack{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--track);margin-top:6px}
+.leg{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:11px;color:var(--mut);margin:5px 0 10px}.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+.dec{display:flex;align-items:flex-end;gap:3px;height:56px;margin-top:6px}.dec div{flex:1;background:var(--acc);border-radius:2px 2px 0 0;min-height:2px;opacity:.88}
+.dec+.row2{margin-top:3px}.note{color:var(--mut);font-size:11.5px;margin:14px 0 0}
+.pan-open #tip{right:402px}@media(max-width:760px){.pan-open #tip{display:none}}
 .sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
 .sw i{width:38px;height:22px;border-radius:11px;background:var(--track);position:relative;transition:background .2s;flex:none}
 .sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#cbd3e6;transition:transform .2s,background .2s}
@@ -54,6 +74,22 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .c-grab #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.55)}.c-grab #curDot{width:5px;height:5px}
 .c-ui #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.6);background:none}.c-ui #curDot{opacity:.9}
 .c-out #curDot,.c-out #curRing{opacity:0}
+/* ---- look & feel (fonts are the --font / --head / --mono variables at the top) ---- */
+.glass{background:linear-gradient(180deg,rgba(24,31,52,.78),rgba(12,16,30,.78));border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 38px rgba(0,0,0,.42)}
+.hud h1,.dpanel h2,.ph b{font-family:var(--head);font-weight:600;letter-spacing:-.01em}
+.hud h1{font-size:17px;display:flex;align-items:center;gap:9px}
+.hud h1::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);flex:none}
+.dpanel h2{font-size:19px}
+.sec,.dh,.tile span{font-family:var(--mono);font-size:10px;letter-spacing:.14em;font-weight:600}
+.sec,.dh{display:flex;align-items:center;gap:8px}
+.sec::before,.dh::before{content:"";width:12px;height:2px;background:var(--acc);border-radius:1px;flex:none}
+.tile b,.kv b,.rl b,.mag,.row2,#cnt{font-family:var(--mono)}
+.tile b{font-size:17px;font-weight:600;letter-spacing:-.02em}.rl b,.kv b{font-size:12px}
+.tile{background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.03));border-radius:12px}
+.mag{font-weight:600;border-radius:9px;letter-spacing:-.02em;font-size:12.5px}
+.ev,.kv{border-top-color:rgba(255,255,255,.07)}
+.seg{border-radius:10px}.seg button{border-radius:8px;font-weight:500}.btn{border-radius:9px}
+.bar{height:6px}#tip{border-radius:12px}
 </style></head><body>
 <div class="hud glass"><h1>Seismic risk zones</h1>
 <p>Big circles group nearby zones. <b>Zoom in</b> (scroll or +) to split them apart. Shade = <span id="legCap">volatility</span> of the area.</p>
@@ -78,6 +114,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
  <div class="row col"><div class="rl"><span>Cursor color</span></div><div class="sws" id="sws"></div></div>
  <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
 </div>
+<aside class="dpanel glass" id="detail" aria-hidden="true"><button class="dx" id="dClose" aria-label="Close panel">&times;</button><div id="dBody"></div></aside>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
 <i id="curRing"></i><i id="curDot"></i>
@@ -106,16 +143,16 @@ for(let la=-60;la<=60;la+=30){const g=[];for(let lo=0;lo<=360;lo+=5)g.push(P(la,
 for(let lo=0;lo<360;lo+=30){const g=[];for(let la=-90;la<=90;la+=5)g.push(P(la,lo));lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(g),lm))}
 globe.add(lines);
 const dots=new THREE.Group();globe.add(dots);
-let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
+let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:1,curColor:'#ff5a5a'};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a'};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
 function rank(key){const s=zones.map(z=>z[key]).sort((a,b)=>a-b),n=s.length;
  zones.forEach(z=>{let lo=0,hi=n;while(lo<hi){const m=(lo+hi)>>1;if(s[m]<z[key])lo=m+1;else hi=m}z['r_'+key]=n>1?lo/(n-1):.5})}
-function prep(){zones.forEach(z=>{z.pp=z.pop!=null?z.pop:(z.pop_m!=null?Math.round(z.pop_m*1e6):undefined);if(z.impact==null)z.impact=z.vol;z.v3=P(z.lat,z.lon,1)});rank('vol');rank('impact')}
+function prep(){zones.forEach(z=>{z.key=`${z.lat}_${z.lon}`;z.pp=z.pop!=null?z.pop:(z.pop_m!=null?Math.round(z.pop_m*1e6):undefined);if(z.impact==null)z.impact=z.vol;z.v3=P(z.lat,z.lon,1)});rank('vol');rank('impact')}
 const C0=new THREE.Color('#ffc2b3'),C1=new THREE.Color('#ff2a2a'),C2=new THREE.Color('#a8001a');
 const shade=t=>{t=Math.max(0,Math.min(1,t));return t<.5?C0.clone().lerp(C1,t*2):C1.clone().lerp(C2,(t-.5)*2)};
 // ---- zoom levels: [camera distance >=, group radius in degrees] ----
@@ -128,14 +165,14 @@ function cluster(list,deg){
   for(const b of order)if(!used.has(b)&&a.v3.dot(b.v3)>=cos){used.add(b);m.push(b)}
   out.push({m})}
  return out}
-const GEO=new THREE.SphereGeometry(1,14,10);
+const GEO=new THREE.SphereGeometry(1,14,10),OUT=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.BackSide}));OUT.scale.setScalar(1.3);   // white rim marks the selected marker
 function build(){while(dots.children.length)dots.remove(dots.children[0]);hov=null;
  const key=mode==='impact'?'r_impact':'r_vol',vis=zones.filter(z=>z.risk>=minRisk);
  for(const c of cluster(vis,LV[level][1]*gs)){const m=c.m,k=m.length,v=new THREE.Vector3();let t=0,rk=0,vo=0,im=0,mx=0,pp=0,ac=0;
   m.forEach(z=>{v.addScaledVector(z.v3,z.risk);t+=z[key];rk+=z.risk;vo+=z.vol;im+=z.impact;mx=Math.max(mx,z.maxmag);pp=Math.max(pp,z.pp||0);ac+=z.accel||0});
   const s=k===1?.7+Math.sqrt(m[0].risk)*.9:Math.min(11,1.8+1.15*Math.sqrt(k));   // bigger groups -> bigger circle
   const mesh=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:shade(t/k),transparent:k>1,opacity:k>1?.9:1}));
-  mesh.userData={k,s,lat:m[0].lat,lon:m[0].lon,risk:rk/k,vol:vo/k,impact:im/k,maxmag:mx,pop:m[0].pp===undefined?undefined:(k===1?m[0].pp:pp),accel:ac/k};
+  mesh.userData={k,s,lat:m[0].lat,lon:m[0].lon,risk:rk/k,vol:vo/k,impact:im/k,maxmag:mx,pop:m[0].pp===undefined?undefined:(k===1?m[0].pp:pp),accel:ac/k,keys:m.map(z=>z.key),members:m};
   mesh.scale.setScalar(s);mesh.position.copy(v.normalize().multiplyScalar(R+s*.45));dots.add(mesh)}
  cnt.textContent=dots.children.length+' markers \u00b7 '+vis.length+' zones shown'}
 const relevel=()=>{const l=lvl();if(l!==level){level=l;build()}};
@@ -158,16 +195,19 @@ function hover(cx,cy){const h=pick(cx,cy);if(hov&&hov!==h)hov.scale.setScalar(ho
 const ppr=()=>R*innerHeight/(2*Math.tan(Math.PI/8)*(cam.position.z-R));   // screen pixels per radian at the globe's surface, so the point you grab follows the cursor
 const clampW=w=>Math.max(-MAXW,Math.min(MAXW,w));
 el.onpointerdown=e=>{drag=true;wy=wx=0;px=e.clientX;py=e.clientY;lastMove=lastClick=performance.now();hist=[{t:lastMove,x:px,y:py}];
- try{el.setPointerCapture(e.pointerId)}catch(_){}cb.add('c-grab');hover(e.clientX,e.clientY)};
+ try{el.setPointerCapture(e.pointerId)}catch(_){}cb.add('c-grab');hover(e.clientX,e.clientY);
+ downInfo={x:px,y:py,t:lastMove,hit:hov};if(!hov)closeDetail()};
 const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=lastClick=performance.now();hist=hist.filter(h=>n-h.t<100);
+ if(downInfo&&downInfo.hit&&Math.hypot(px-downInfo.x,py-downInfo.y)<6&&n-downInfo.t<500){wy=wx=0;hist=[];openDetail(downInfo.hit);downInfo=null;return}   // a click (not a drag) on a marker
+ downInfo=null;
  if(hist.length>1){const a=hist[0],b=hist[hist.length-1],dt=(b.t-a.t)/1000;
   if(dt>.005){wy=clampW((b.x-a.x)/dt/ppr());wx=clampW((b.y-a.y)/dt/ppr())}}   // release velocity = recent pointer speed
  hist=[]};
 onpointerup=release;onpointercancel=release;
 onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
- const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip');cb.toggle('c-ui',!!ui);
+ const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel');cb.toggle('c-ui',!!ui);
  if(drag){const k=1/ppr();globe.rotation.y+=(e.clientX-px)*k;globe.rotation.x=Math.max(-TILT,Math.min(TILT,globe.rotation.x+(e.clientY-py)*k));
-  px=e.clientX;py=e.clientY;hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
+  px=e.clientX;py=e.clientY;if(downInfo&&Math.hypot(px-downInfo.x,py-downInfo.y)>6)closeDetail();hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
  else if(ui)hover(-999,-999);else hover(e.clientX,e.clientY)};
 el.onwheel=e=>{e.preventDefault();zoom(e.deltaY*.3)};
 zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
@@ -189,12 +229,49 @@ spd.oninput=()=>change({spd:+spd.value});glide.oninput=()=>change({glide:+glide.
 resetBtn.onclick=()=>change({...DEF},true);
 const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
 gear.onclick=e=>{e.stopPropagation();setOpen(!panel.classList.contains('open'))};
-document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false)});
-onkeydown=e=>{if(e.key==='Escape')setOpen(false)};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false);if(e.target!==el&&!e.target.closest('.dpanel'))closeDetail()});   // clicking anything except the details panel closes it
+onkeydown=e=>{if(e.key==='Escape'){setOpen(false);closeDetail()}};
+// ---- details panel ----
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const magBg=m=>m>=8?'#a8001a':m>=7?'#e5383b':m>=6?'#ff6b4a':m>=5?'#ff9f68':'#ffc2b3';
+const ago=iso=>{const d=(Date.now()-Date.parse(iso))/864e5;return d<1/24?'just now':d<1?Math.round(d*24)+' h ago':d<60?Math.round(d)+' d ago':d<730?Math.round(d/30.4)+' mo ago':Math.round(d/365.25)+' yr ago'};
+const region=p=>{if(!p)return'';const i=p.indexOf(' of ');return i>=0?p.slice(i+4):p};
+const evRow=e=>`<div class="ev"><div class="mag" style="background:${magBg(e[1])};color:${e[1]<5.5?'#3a0d0d':'#fff'}">M${e[1].toFixed(1)}</div><div class="t"><b>${esc(e[3]||'Unnamed location')}</b><small>${e[0].slice(0,10)} \u00b7 ${ago(e[0])}${e[2]==null?'':' \u00b7 '+e[2]+' km deep'}</small></div></div>`;
+const bar=(v,cols,labs)=>{const t=v.reduce((a,b)=>a+b,0)||1;return `<div class="stack">${v.map((x,i)=>`<div style="width:${x/t*100}%;background:${cols[i]}" title="${labs[i]}: ${x.toLocaleString()}"></div>`).join('')}</div><div class="leg">${labs.map((l,i)=>`<span><i style="background:${cols[i]}"></i>${l} ${Math.round(v[i]/t*100)}%</span>`).join('')}</div>`};
+const kv=(a,b)=>`<div class="kv"><span>${a}</span><b>${b}</b></div>`;
+function agg(u){const C=DET&&DET.cells,ds=C?u.keys.map(k=>C[k]).filter(Boolean):[];if(!ds.length)return null;
+ const sum=f=>ds.reduce((a,d)=>a+(d[f]||0),0),vec=(f,n)=>Array.from({length:n},(_,i)=>ds.reduce((a,d)=>a+((d[f]||[])[i]||0),0)),n=sum('n')||1;
+ const evs=f=>ds.flatMap(d=>d[f]||[]);
+ return{n:sum('n'),n6:sum('n6'),n7:sum('n7'),r10:sum('r10'),p10:sum('p10'),dm:ds.reduce((a,d)=>a+d.dm*d.n,0)/n,dp:vec('dp',3),mb:vec('mb',4),dec:vec('dec',13),
+  last:ds.map(d=>d.last).sort().pop(),rec:evs('rec').sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6),big:evs('big').sort((a,b)=>b[1]-a[1]||b[0].localeCompare(a[0])).slice(0,3)}}
+function renderDetail(u){const A=agg(u),M=u.members,pc=f=>Math.round(M.reduce((s,z)=>s+z['r_'+f],0)/M.length*100),c=M[0];
+ const name=A&&A.big[0]?region(A.big[0][3]):'',coord=u.k===1?`${Math.abs(c.lat)}\u00b0${c.lat<0?'S':'N'}, ${Math.abs(c.lon)}\u00b0${c.lon<0?'W':'E'} \u00b7 2\u00b0 zone`:`${u.k} zones grouped \u00b7 zoom in to split`;
+ const tile=(l,v,t)=>`<div class="tile"><span>${l}</span><b>${v}</b><small>${t}</small></div>`;
+ const ppl=u.pop===undefined?'\u2014':u.pop>=1?u.pop.toFixed(1)+'M':Math.round(u.pop*1000)+'K';
+ let h=`<h2>${esc(name||(u.k>1?'Grouped zones':'Seismic zone'))}</h2><div class="sub">${coord}</div><div class="tiles">`+
+  tile('Risk \u00b7 10 yr, M6+',(u.risk*100|0)+'%','model score')+tile('Volatility',u.vol.toFixed(2),pc('vol')+'th percentile')+
+  tile('Human impact',u.impact.toFixed(2),pc('impact')+'th percentile')+tile('People within 100 km',ppl,u.k>1?'largest in group':'cities of 15k+')+
+  tile('Rate-rise chance',u.accel>0?(u.accel*100|0)+'%':'\u2014','M4.5+ rate \u22651.5\u00d7, next 10 yr')+tile('Largest on record','M'+u.maxmag.toFixed(1),'in model data')+'</div>';
+ if(A){const tr=A.p10?Math.round((A.r10/A.p10-1)*100):null;
+  h+=`<div class="dh">Biggest ever recorded</div>${A.big.map(evRow).join('')}<div class="dh">Recent activity</div>${A.rec.map(evRow).join('')}<div class="dh">Telemetry</div>`+
+   kv('Recorded events since 1900',A.n.toLocaleString())+kv('Magnitude 6+ / 7+',A.n6.toLocaleString()+' / '+A.n7.toLocaleString())+kv('Last event',A.last?ago(A.last):'\u2014')+kv('Average depth',Math.round(A.dm)+' km')+
+   kv('M4.5+ events, last 10 yr vs prior 10',A.r10+' vs '+A.p10+(tr===null?'':' ('+(tr>=0?'+':'')+tr+'%)'))+
+   `<div class="dh">Magnitude mix</div>`+bar(A.mb,['#ffc2b3','#ff9f68','#e5383b','#a8001a'],['<5','5\u20136','6\u20137','7+'])+
+   `<div class="dh" style="margin-top:6px">Depth profile</div>`+bar(A.dp,['#7dd3fc','#38bdf8','#1d4ed8'],['Shallow <70 km','Mid 70\u2013300','Deep >300'])+
+   `<div class="dh" style="margin-top:6px">M5+ events per decade</div><div class="dec">${A.dec.map((v,i)=>`<div style="height:${Math.max(4,v/(Math.max(...A.dec)||1)*100)}%" title="${1900+i*10}s: ${v}"></div>`).join('')}</div><div class="row2"><span>1900s</span><span>2020s</span></div>`+
+   (u.k>1?`<p class="note">Totals and event lists combine all ${u.k} zones in this group.</p>`:'')+
+   `<p class="note">Source: USGS ComCat \u00b7 M4.5+ (M5.5+ before 1973) \u00b7 updated ${esc(DET.generated||'')}</p>`}
+ else h+=`<p class="note">${DET===null&&detTried?'Detailed event history was not found (details.json). Run train.py to generate it.':'Loading event history\u2026'}</p>`;
+ dBody.innerHTML=h}
+async function loadDet(){if(detTried)return;detTried=true;try{const r=await fetch('details.json');if(r.ok)DET=await r.json()}catch(_){}}
+function closeDetail(){if(!detail.classList.contains('open'))return;detail.classList.remove('open');detail.setAttribute('aria-hidden','true');cb.remove('pan-open');if(OUT.parent)OUT.parent.remove(OUT)}
+async function openDetail(m){setOpen(false);m.add(OUT);detail.classList.add('open');detail.setAttribute('aria-hidden','false');cb.add('pan-open');renderDetail(m.userData);detail.scrollTop=0;
+ if(!detTried){await loadDet();if(OUT.parent===m)renderDetail(m.userData)}}
+dClose.onclick=closeDetail;
 // ---- custom cursor ----
 function curMove(e){mx=e.clientX;my=e.clientY;if(rx<0){rx=mx;ry=my}cb.remove('c-out');curDot.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`}
 document.documentElement.onmouseleave=()=>cb.add('c-out');
-function setZones(j,msg){zones=j;prep();build();src.textContent=msg}
+function setZones(j,msg){closeDetail();zones=j;prep();build();src.textContent=msg}
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
 onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)};
 globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();prep();level=lvl();build();

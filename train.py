@@ -71,11 +71,11 @@ def main():
     now["impact"] = (now.risk * np.log10(1 + now.pop100)); now["impact"] /= now.impact.max()
     z = now[now.risk >= 0.1]
     json.dump([dict(lat=r.lat, lon=r.lon, risk=round(r.risk, 3), vol=round(r.vol, 3), maxmag=round(r.mag_max, 1),
-                    pop_m=round(r.pop100/1e6, 2), impact=round(r.impact, 3), accel=round(r.accel, 3)) for r in z.itertuples()], open("zones.json", "w"))
+                    pop=int(r.pop100), impact=round(r.impact, 3), accel=round(r.accel, 3)) for r in z.itertuples()], open("zones.json", "w"))
     top = now.sort_values("expected_exposed", ascending=False).head(10)[["lat", "lon", "risk", "pop100", "expected_exposed"]].round(2)
     print(f"\n{len(z)} zones -> zones.json\n\nTop 10 by expected human exposure (risk x population within 100km):\n{top.to_string(index=False)}")
-    out["top_exposure"] = top.to_dict("records"); json.dump(out, open("metrics.json", "w"), indent=1, default=float)
+    out["top_exposure"] = top.to_dict("records"); import details; details.write(details.build(conn, now, z, str(today.date()))); json.dump(out, open("metrics.json", "w"), indent=1, default=float)
     import os, shutil                                   # also drop results into the website folder
     if os.path.isdir("vercel-site/public"):
-        for f in ("zones.json", "metrics.json"): shutil.copy(f, f"vercel-site/public/{f}")
+        for f in ("zones.json", "metrics.json", "details.json"): shutil.copy(f, f"vercel-site/public/{f}")
 if __name__ == "__main__": main()

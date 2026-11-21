@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismic Risk Globe</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#05070d;--fg:#e8ecf4;--mut:#8b95a8;--acc:#e5383b;--glass:rgba(14,19,34,.74);--line:rgba(255,255,255,.09);--track:#2a3350;--cur:#ff5a5a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
 canvas{display:block;touch-action:none;cursor:grab}
@@ -31,6 +31,7 @@ button{font:inherit;color:inherit}
 .seg{display:flex;background:rgba(255,255,255,.06);border-radius:9px;padding:3px}
 .seg button{background:none;border:0;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--mut);transition:background .2s,color .2s}
 .seg button.on{background:var(--acc);color:#fff}
+.sws{display:flex;gap:10px;margin-top:8px}.sws button{width:24px;height:24px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s}.sws button:hover{transform:scale(1.15)}.sws button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.45)}
 .sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
 .sw i{width:38px;height:22px;border-radius:11px;background:var(--track);position:relative;transition:background .2s;flex:none}
 .sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#cbd3e6;transition:transform .2s,background .2s}
@@ -46,9 +47,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 /* custom cursor: a dot that tracks exactly + a ring that trails it */
 .cursor-on,.cursor-on *{cursor:none!important}
 #curDot,#curRing{position:fixed;left:0;top:0;pointer-events:none;z-index:99;display:none;will-change:transform}
-#curDot{width:7px;height:7px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 10px 2px rgba(255,70,70,.75);transition:opacity .15s,width .15s,height .15s}
+#curDot{width:7px;height:7px;border-radius:50%;background:var(--cur);box-shadow:0 0 10px 2px color-mix(in srgb,var(--cur) 75%,transparent);transition:opacity .15s,width .15s,height .15s}
 #curRing{width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(255,255,255,.8);box-shadow:0 0 14px rgba(255,255,255,.12);transition:width .18s,height .18s,background .18s,border-color .18s,opacity .18s}
-.c-hover #curRing{width:48px;height:48px;background:rgba(255,70,70,.16);border-color:#ff6b6b}
+.c-hover #curRing{width:48px;height:48px;background:color-mix(in srgb,var(--cur) 18%,transparent);border-color:var(--cur)}
 .c-hover #curDot{width:9px;height:9px}
 .c-grab #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.55)}.c-grab #curDot{width:5px;height:5px}
 .c-ui #curRing{width:20px;height:20px;border-color:rgba(255,255,255,.6);background:none}.c-ui #curDot{opacity:.9}
@@ -70,8 +71,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
  <label class="row sw"><span>Auto-spin</span><input id="spinSw" type="checkbox"><i></i></label>
  <div class="row col"><div class="rl"><span>Spin speed</span><b id="spdL"></b></div><input id="spd" type="range" min="0" max="25"></div>
  <div class="row col"><div class="rl"><span>Glide after a fling</span><b id="glL"></b></div><input id="glide" type="range" min="0" max="100"></div>
+ <label class="row sw"><span>Pause when hovering a zone</span><input id="hovSw" type="checkbox"><i></i></label>
+ <div class="row col"><div class="rl"><span>Resume spin after a click</span><b id="resL"></b></div><input id="resumeR" type="range" min="0" max="10"></div>
  <div class="sec">Interface</div>
  <label class="row sw"><span>Custom cursor</span><input id="curSw" type="checkbox"><i></i></label>
+ <div class="row col"><div class="rl"><span>Cursor color</span></div><div class="sws" id="sws"></div></div>
  <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
 </div>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
@@ -102,16 +106,16 @@ for(let la=-60;la<=60;la+=30){const g=[];for(let lo=0;lo<=360;lo+=5)g.push(P(la,
 for(let lo=0;lo<360;lo+=30){const g=[];for(let la=-90;la<=90;la+=5)g.push(P(la,lo));lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(g),lm))}
 globe.add(lines);
 const dots=new THREE.Group();globe.add(dots);
-let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
+let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a'};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
 function rank(key){const s=zones.map(z=>z[key]).sort((a,b)=>a-b),n=s.length;
  zones.forEach(z=>{let lo=0,hi=n;while(lo<hi){const m=(lo+hi)>>1;if(s[m]<z[key])lo=m+1;else hi=m}z['r_'+key]=n>1?lo/(n-1):.5})}
-function prep(){zones.forEach(z=>{if(z.impact==null)z.impact=z.vol;z.v3=P(z.lat,z.lon,1)});rank('vol');rank('impact')}
+function prep(){zones.forEach(z=>{z.pp=z.pop!=null?z.pop:(z.pop_m!=null?Math.round(z.pop_m*1e6):undefined);if(z.impact==null)z.impact=z.vol;z.v3=P(z.lat,z.lon,1)});rank('vol');rank('impact')}
 const C0=new THREE.Color('#ffc2b3'),C1=new THREE.Color('#ff2a2a'),C2=new THREE.Color('#a8001a');
 const shade=t=>{t=Math.max(0,Math.min(1,t));return t<.5?C0.clone().lerp(C1,t*2):C1.clone().lerp(C2,(t-.5)*2)};
 // ---- zoom levels: [camera distance >=, group radius in degrees] ----
@@ -128,10 +132,10 @@ const GEO=new THREE.SphereGeometry(1,14,10);
 function build(){while(dots.children.length)dots.remove(dots.children[0]);hov=null;
  const key=mode==='impact'?'r_impact':'r_vol',vis=zones.filter(z=>z.risk>=minRisk);
  for(const c of cluster(vis,LV[level][1]*gs)){const m=c.m,k=m.length,v=new THREE.Vector3();let t=0,rk=0,vo=0,im=0,mx=0,pp=0,ac=0;
-  m.forEach(z=>{v.addScaledVector(z.v3,z.risk);t+=z[key];rk+=z.risk;vo+=z.vol;im+=z.impact;mx=Math.max(mx,z.maxmag);pp=Math.max(pp,z.pop_m||0);ac+=z.accel||0});
+  m.forEach(z=>{v.addScaledVector(z.v3,z.risk);t+=z[key];rk+=z.risk;vo+=z.vol;im+=z.impact;mx=Math.max(mx,z.maxmag);pp=Math.max(pp,z.pp||0);ac+=z.accel||0});
   const s=k===1?.7+Math.sqrt(m[0].risk)*.9:Math.min(11,1.8+1.15*Math.sqrt(k));   // bigger groups -> bigger circle
   const mesh=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:shade(t/k),transparent:k>1,opacity:k>1?.9:1}));
-  mesh.userData={k,s,risk:rk/k,vol:vo/k,impact:im/k,maxmag:mx,pop:m[0].pop_m===undefined?undefined:(k===1?m[0].pop_m:pp),accel:ac/k};
+  mesh.userData={k,s,lat:m[0].lat,lon:m[0].lon,risk:rk/k,vol:vo/k,impact:im/k,maxmag:mx,pop:m[0].pp===undefined?undefined:(k===1?m[0].pp:pp),accel:ac/k};
   mesh.scale.setScalar(s);mesh.position.copy(v.normalize().multiplyScalar(R+s*.45));dots.add(mesh)}
  cnt.textContent=dots.children.length+' markers \u00b7 '+vis.length+' zones shown'}
 const relevel=()=>{const l=lvl();if(l!==level){level=l;build()}};
@@ -142,17 +146,20 @@ function pick(cx,cy){let best=null,bd=1e9;globe.updateMatrixWorld(true);
  dots.children.forEach(m=>{m.getWorldPosition(v3);if(v3.dot(cam.position)<R*R)return;
   const dist=cam.position.distanceTo(v3),pr=m.userData.s*innerHeight/(2*Math.tan(Math.PI/8)*dist),thr=Math.max(14,pr+6);
   const p=v3.clone().project(cam),d=Math.hypot((p.x+1)/2*innerWidth-cx,(1-p.y)/2*innerHeight-cy);if(d<thr&&d<bd){bd=d;best=m}});return best}
+const dm=(v,p,n)=>Math.abs(Math.round(v))+'\u00b0'+(v>=0?p:n);
+const popText=n=>n>=1e6?'~'+(n/1e6).toFixed(n>=1e7?0:1)+' million':n>=1000?'~'+(Math.round(n/1000)*1000).toLocaleString('en-US'):null;
+const popTip=(n,pre)=>n===undefined?'':' \u00b7 '+(popText(n)?pre+popText(n)+' people in cities (15k+) within 100 km':'no cities of 15,000+ within 100 km');
 const fmt=u=>u.k>1
- ?`${u.k} zones \u00b7 avg risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 impact ${u.impact.toFixed(2)} \u00b7 max M${u.maxmag}`+(u.pop!==undefined?` \u00b7 up to ${u.pop}M people nearby`:'')+' \u00b7 zoom in to split'
- :`Risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 max M${u.maxmag}`+(u.pop!==undefined?` \u00b7 ${u.pop}M people within 100 km`:'')+(u.accel?` \u00b7 rate-rise prob ${u.accel}`:'');
+ ?`${u.k} zones \u00b7 avg risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 impact ${u.impact.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'up to ')+' \u00b7 zoom in to split'
+ :`Cell ${dm(u.lat,'N','S')} ${dm(u.lon,'E','W')} \u00b7 risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'')+(u.accel?` \u00b7 rate-rise chance ${u.accel*100|0}%`:'');
 function hover(cx,cy){const h=pick(cx,cy);if(hov&&hov!==h)hov.scale.setScalar(hov.userData.s);hov=h;
  if(h)h.scale.setScalar(h.userData.s*(h.userData.k>1?1.15:1.9));
  tip.textContent=h?fmt(h.userData):'Hover a circle or dot';cb.toggle('c-hover',!!h)}
 const ppr=()=>R*innerHeight/(2*Math.tan(Math.PI/8)*(cam.position.z-R));   // screen pixels per radian at the globe's surface, so the point you grab follows the cursor
 const clampW=w=>Math.max(-MAXW,Math.min(MAXW,w));
-el.onpointerdown=e=>{drag=true;wy=wx=0;px=e.clientX;py=e.clientY;lastMove=performance.now();hist=[{t:lastMove,x:px,y:py}];
+el.onpointerdown=e=>{drag=true;wy=wx=0;px=e.clientX;py=e.clientY;lastMove=lastClick=performance.now();hist=[{t:lastMove,x:px,y:py}];
  try{el.setPointerCapture(e.pointerId)}catch(_){}cb.add('c-grab');hover(e.clientX,e.clientY)};
-const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=performance.now();hist=hist.filter(h=>n-h.t<100);
+const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=lastClick=performance.now();hist=hist.filter(h=>n-h.t<100);
  if(hist.length>1){const a=hist[0],b=hist[hist.length-1],dt=(b.t-a.t)/1000;
   if(dt>.005){wy=clampW((b.x-a.x)/dt/ppr());wx=clampW((b.y-a.y)/dt/ppr())}}   // release velocity = recent pointer speed
  hist=[]};
@@ -165,18 +172,19 @@ onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
 el.onwheel=e=>{e.preventDefault();zoom(e.deltaY*.3)};
 zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
 // ---- settings panel ----
+['#ff5a5a','#ffb703','#4cc9f0','#80ed99','#c77dff','#ffffff'].forEach(c=>{const b=document.createElement('button');b.dataset.c=c;b.style.background=c;b.setAttribute('aria-label','Cursor color '+c);b.onclick=()=>change({curColor:c});sws.appendChild(b)});
 function syncUI(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
  minR.value=S.minRisk;minRL.textContent=S.minRisk+'%';grp.value=S.grp;grpL.textContent=S.grp===0?'Off':S.grp+'%';
  gridSw.checked=S.grid;spinSw.checked=S.spin;spd.value=S.spd;spdL.textContent=(S.spd/100*57.3).toFixed(0)+'\u00b0/s';
- glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;
+ glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
  legCap.textContent=S.mode==='vol'?'volatility':'human impact';
  document.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'))}
-function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;FRICTION=4*Math.pow(.15,S.glide/100);
+function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;hoverPause=S.hoverPause;resumeMs=S.resume>=10?1e15:S.resume*1000;document.documentElement.style.setProperty('--cur',S.curColor);FRICTION=4*Math.pow(.15,S.glide/100);
  const on=S.cursor&&FINE;cb.toggle('cursor-on',on);ringOn=on;curDot.style.display=curRing.style.display=on?'block':'none'}
 function change(p,rebuild){Object.assign(S,p);apply();if(rebuild)build();syncUI();save()}
 seg.onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(m)change({mode:m},true)};
 minR.oninput=()=>change({minRisk:+minR.value},true);grp.oninput=()=>change({grp:+grp.value},true);
-gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>change({spin:spinSw.checked});
+gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>{lastClick=-1e18;change({spin:spinSw.checked})};hovSw.onchange=()=>change({hoverPause:hovSw.checked});resumeR.oninput=()=>change({resume:+resumeR.value});
 spd.oninput=()=>change({spd:+spd.value});glide.oninput=()=>change({glide:+glide.value});curSw.onchange=()=>change({cursor:curSw.checked});
 resetBtn.onclick=()=>change({...DEF},true);
 const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
@@ -197,7 +205,7 @@ function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
  if(!drag){globe.rotation.y+=wy*dt;globe.rotation.x+=wx*dt;
   const k=Math.exp(-FRICTION*dt);wy*=k;wx*=k;if(Math.abs(wy)<.02)wy=0;if(Math.abs(wx)<.02)wx=0;
   if(globe.rotation.x>TILT){globe.rotation.x=TILT;wx=0}if(globe.rotation.x<-TILT){globe.rotation.x=-TILT;wx=0}
-  if(spin&&!hov&&now-lastMove>2500)globe.rotation.y+=AUTO*dt}
+  if(spin&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
  ren.render(scene,cam)}
 (function loop(){requestAnimationFrame(loop);tick(performance.now())})();
 </script></body></html>

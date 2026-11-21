@@ -109,7 +109,7 @@ const dots=new THREE.Group();globe.add(dots);
 let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:14,glide:42,cursor:true,hoverPause:true,resume:1,curColor:'#ff5a5a'};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:140,glide:42,cursor:true,hoverPause:true,resume:1,curColor:'#ff5a5a'};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----

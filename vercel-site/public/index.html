@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismic Risk Globe</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
@@ -78,6 +78,19 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 .c-grab #curRing{width:20px;height:20px;border-color:rgba(232,228,218,.5)}.c-grab #curDot{width:4px;height:4px}
 .c-ui #curRing{width:18px;height:18px;border-color:rgba(232,228,218,.6)}
 .c-out #curDot,.c-out #curRing{opacity:0}
+/* intro screen */
+#introEl{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;justify-content:space-between;padding:clamp(22px,4.5vw,56px);cursor:pointer;
+ background:linear-gradient(90deg,rgba(10,11,13,.9) 0%,rgba(10,11,13,.62) 36%,rgba(10,11,13,0) 66%);transition:opacity .9s ease}
+#introEl.out{opacity:0}
+#introEl h1{font:500 clamp(56px,10vw,136px)/.92 var(--head);letter-spacing:-.035em;margin:0}
+.itag{font:italic 400 clamp(18px,2.2vw,26px) var(--head);color:var(--acc);margin:10px 0 18px}
+#introEl p{margin:0 0 10px;max-width:min(440px,88vw);font-size:15px;line-height:1.55;color:#d6d1c4}
+#introEl .imut{color:var(--mut);font-size:12.5px}
+.icta{font:500 13px var(--mono);letter-spacing:.06em;margin-bottom:8px}
+.caret{display:inline-block;width:8px;height:15px;background:var(--acc);margin-left:8px;vertical-align:-3px;animation:blink 1.1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.hud,.gear,.zoomk,#tip{transition:opacity .9s ease .15s}
+.intro-on .hud,.intro-on .gear,.intro-on .zoomk,.intro-on #tip{opacity:0;pointer-events:none}
 /* tutorial */
 #tourBlock{position:fixed;inset:0;z-index:60;display:none}#tourBlock.on{display:block}
 #tourHL{position:fixed;z-index:61;pointer-events:none;border-radius:3px;border:1.5px solid var(--acc);box-shadow:0 0 0 9999px rgba(5,6,8,.7);opacity:0;visibility:hidden;transition:left .22s,top .22s,width .22s,height .22s,opacity .22s,visibility .22s}
@@ -109,6 +122,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
  <div class="sec">Interface</div>
  <label class="row sw"><span>Custom cursor</span><input id="curSw" type="checkbox"><i></i></label>
  <div class="row col"><div class="rl"><span>Cursor color</span></div><div class="sws" id="sws"></div></div>
+ <label class="row sw"><span>Show intro screen on load</span><input id="introSw" type="checkbox"><i></i></label>
  <label class="row sw"><span>Show tutorial on load</span><input id="tutSw" type="checkbox"><i></i></label>
  <div class="row"><span>Tutorial</span><button class="btn" id="replayBtn">Replay</button></div>
  <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
@@ -116,6 +130,10 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 <aside class="dpanel glass" id="detail" aria-hidden="true"><button class="dx" id="dClose" aria-label="Close panel">&times;</button><div id="dBody"></div></aside>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
+<div id="introEl"><div class="itop"><h1>Seismos</h1><div class="itag">Where the Earth shakes.</div>
+ <p>A global earthquake atlas built on 125 years of USGS records. A machine-learning model ranks regions by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
+ <p class="imut">A risk ranking, not a prediction.</p></div>
+ <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="imut">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
 <div id="tourBlock"></div><div id="tourHL"></div><div id="tourPing"></div>
 <div class="tourcard glass" id="tourCard" role="dialog" aria-live="polite"><div class="tstep" id="tStep"></div><h3 id="tTitle"></h3><p id="tText"></p><p class="tsub" id="tSub"></p>
  <div class="tbtn"><button class="link" id="tSkip">Skip tour</button><span><button class="btn" id="tBack">Back</button> <button class="btn pri" id="tNext">Next</button></span></div></div>
@@ -145,10 +163,10 @@ for(let la=-60;la<=60;la+=30){const g=[];for(let lo=0;lo<=360;lo+=5)g.push(P(la,
 for(let lo=0;lo<360;lo+=30){const g=[];for(let la=-90;la<=90;la+=5)g.push(P(la,lo));lines.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(g),lm))}
 globe.add(lines);
 const dots=new THREE.Group();globe.add(dots);
-let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,tour={on:false,i:0,el:null},DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
+let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,tour={on:false,i:0,el:null},intro={on:false,hold:false,t0:0,z0:380,x0:0},DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a',tutorial:true};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a',tutorial:true,intro:true};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
@@ -159,7 +177,7 @@ const C0=new THREE.Color('#ffc2b3'),C1=new THREE.Color('#ff2a2a'),C2=new THREE.C
 const shade=t=>{t=Math.max(0,Math.min(1,t));return t<.5?C0.clone().lerp(C1,t*2):C1.clone().lerp(C2,(t-.5)*2)};
 // ---- zoom levels: [camera distance >=, group radius in degrees] ----
 const LV=[[440,12],[350,7],[270,4],[200,2.2],[0,0]];
-const lvl=()=>LV.findIndex(l=>cam.position.z>=l[0]);
+const lvl=()=>intro.hold?1:LV.findIndex(l=>cam.position.z>=l[0]);
 function cluster(list,deg){
  if(!deg)return list.map(z=>({m:[z]}));
  const cos=Math.cos(deg*Math.PI/180),used=new Set(),out=[],order=list.slice().sort((a,b)=>b.risk-a.risk);
@@ -206,7 +224,7 @@ const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=lastCl
  hist=[]};
 onpointerup=release;onpointercancel=release;
 onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
- const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel,.tourcard,#tourBlock');cb.toggle('c-ui',!!ui);
+ const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel,.tourcard,#tourBlock,#introEl');cb.toggle('c-ui',!!ui);
  if(drag){const k=1/ppr();globe.rotation.y+=(e.clientX-px)*k;globe.rotation.x=Math.max(-TILT,Math.min(TILT,globe.rotation.x+(e.clientY-py)*k));
   px=e.clientX;py=e.clientY;if(downInfo&&Math.hypot(px-downInfo.x,py-downInfo.y)>6)closeDetail();hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
  else if(ui)hover(-999,-999);else hover(e.clientX,e.clientY)};
@@ -217,7 +235,7 @@ zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
 function syncUI(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
  minR.value=S.minRisk;minRL.textContent=S.minRisk+'%';grp.value=S.grp;grpL.textContent=S.grp===0?'Off':S.grp+'%';
  gridSw.checked=S.grid;spinSw.checked=S.spin;spd.value=S.spd;spdL.textContent=(S.spd/100*57.3).toFixed(0)+'\u00b0/s';
- glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;tutSw.checked=S.tutorial;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
+ glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;tutSw.checked=S.tutorial;introSw.checked=S.intro;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
  
  document.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'))}
 function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;hoverPause=S.hoverPause;resumeMs=S.resume>=10?1e15:S.resume*1000;document.documentElement.style.setProperty('--cur',S.curColor);FRICTION=4*Math.pow(.15,S.glide/100);
@@ -228,11 +246,11 @@ minR.oninput=()=>change({minRisk:+minR.value},true);grp.oninput=()=>change({grp:
 gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>{lastClick=-1e18;change({spin:spinSw.checked})};hovSw.onchange=()=>change({hoverPause:hovSw.checked});resumeR.oninput=()=>change({resume:+resumeR.value});
 spd.oninput=()=>change({spd:+spd.value});glide.oninput=()=>change({glide:+glide.value});curSw.onchange=()=>change({cursor:curSw.checked});
 resetBtn.onclick=()=>change({...DEF},true);
-tutSw.onchange=()=>change({tutorial:tutSw.checked});replayBtn.onclick=()=>{setOpen(false);tourEnd();closeDetail(true);tourGo(0)};
+tutSw.onchange=()=>change({tutorial:tutSw.checked});introSw.onchange=()=>change({intro:introSw.checked});replayBtn.onclick=()=>{setOpen(false);tourEnd();closeDetail(true);tourGo(0)};
 const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
 gear.onclick=e=>{e.stopPropagation();setOpen(!panel.classList.contains('open'))};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false);if(e.target!==el&&!e.target.closest('.dpanel'))closeDetail()});   // clicking anything except the details panel closes it
-onkeydown=e=>{if(e.key==='Escape'){if(tour.on){tourEnd();return}setOpen(false);closeDetail()}};
+onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&intro.on&&!intro.t0){begin();return}if(e.key==='Escape'){if(tour.on){tourEnd();return}setOpen(false);closeDetail()}};
 // ---- details panel ----
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const magBg=m=>m>=8?'#a8001a':m>=7?'#e5383b':m>=6?'#ff6b4a':m>=5?'#ff9f68':'#ffc2b3';
@@ -308,24 +326,31 @@ function pingUpdate(){let b=null;globe.updateMatrixWorld(true);
  if(!b){tourPing.style.display='none';return}tourPing.style.display='block';tourPing.style.transform=`translate(${b.x}px,${b.y}px) translate(-50%,-50%)`;
  tourPing.style.width=tourPing.style.height=(b.s*innerHeight/(2*Math.tan(Math.PI/8)*cam.position.z)*2+30)+'px'}
 tNext.onclick=()=>tour.i>=STEPS.length-1?tourEnd():tourGo(tour.i+1,1);tBack.onclick=()=>tourGo(tour.i-1,-1);tSkip.onclick=tourEnd;
+// ---- intro: click to begin ----
+function begin(){if(!intro.on||intro.t0)return;intro.t0=performance.now();introEl.classList.add('out');wy=8}   // wy = spin burst; friction slows it back down
+introEl.onclick=begin;
 // ---- custom cursor ----
 function curMove(e){mx=e.clientX;my=e.clientY;if(rx<0){rx=mx;ry=my}cb.remove('c-out');curDot.style.transform=`translate3d(${mx}px,${my}px,0) translate(-50%,-50%)`}
 document.documentElement.onmouseleave=()=>cb.add('c-out');
 function setZones(j,msg){closeDetail();zones=j;prep();build();src.textContent=msg}
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
 onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);if(tour.on)tourPlace(tour.el)};
-globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();prep();level=lvl();build();
+globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();
+if(S.intro){intro.on=intro.hold=true;cam.position.z=intro.z0=innerWidth<innerHeight?300:240;globe.position.x=intro.x0=innerWidth>innerHeight*1.15?55:0;cb.add('intro-on');introEl.style.display='flex'}
+prep();level=lvl();build();
 const noLive=()=>{src.textContent='Live data unavailable \u00b7 showing sample zones'};
 fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.');else noLive()}).catch(noLive);
-if(S.tutorial)setTimeout(()=>tourGo(0),900);   // tutorial runs on every load (turn off in Settings)
+if(!S.intro&&S.tutorial)setTimeout(()=>tourGo(0),900);   // with the intro screen on, the tutorial starts after you click to begin
 let lastT=performance.now();
 function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
  if(tour.on&&tour.i===0)pingUpdate();
+ if(intro.t0){const k=Math.min(1,(now-intro.t0)/2400),e=1-Math.pow(1-k,3);cam.position.z=intro.z0+(380-intro.z0)*e;globe.position.x=intro.x0*(1-e);if(k>.5)cb.remove('intro-on');
+  if(k>=1){intro.on=intro.hold=false;intro.t0=0;introEl.style.display='none';relevel();if(S.tutorial)setTimeout(()=>tourGo(0),500)}}
  if(ringOn){const a=1-Math.exp(-dt*16);rx+=(mx-rx)*a;ry+=(my-ry)*a;curRing.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`}
  if(!drag){globe.rotation.y+=wy*dt;globe.rotation.x+=wx*dt;
   const k=Math.exp(-FRICTION*dt);wy*=k;wx*=k;if(Math.abs(wy)<.02)wy=0;if(Math.abs(wx)<.02)wx=0;
   if(globe.rotation.x>TILT){globe.rotation.x=TILT;wx=0}if(globe.rotation.x<-TILT){globe.rotation.x=-TILT;wx=0}
-  if(spin&&!(tour.on&&tour.i>0)&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
+  if(intro.on&&!intro.t0)globe.rotation.y+=.12*dt;else if(spin&&!(tour.on&&tour.i>0)&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
  ren.render(scene,cam)}
 (function loop(){requestAnimationFrame(loop);tick(performance.now())})();
 </script></body></html>

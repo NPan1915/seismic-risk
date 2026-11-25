@@ -1,17 +1,22 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0b0d;--panel:#121316;--rule:#2b2d33;--fg:#e8e4da;--mut:#8d8a82;--acc:#e0a24a;--track:#2b2d33;--cur:#ff5a5a;
---font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--head:"Newsreader",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+--mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--font:var(--mono);--head:var(--mono);--pixel:"Press Start 2P","Courier New",monospace;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:13px/1.5 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:12.5px/1.5 var(--font);overflow:hidden;-webkit-font-smoothing:antialiased}
 canvas{display:block;touch-action:none;cursor:grab}
 .c-grab canvas{cursor:grabbing}
 .glass{background:var(--panel);border:1px solid var(--rule);border-radius:4px}
 button{font:inherit;color:inherit}
+/* fade the whole site in on first load (starts once fonts are ready; see the last script) */
+body{opacity:0;animation:pageIn 1.8s cubic-bezier(.22,.61,.36,1) .1s both paused}
+body.go{animation-play-state:running}
+@keyframes pageIn{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){body{opacity:1;animation:none}}
 /* corner readout */
 .hud{position:fixed;left:18px;top:calc(16px + env(safe-area-inset-top,0px));max-width:calc(100% - 100px);text-shadow:0 1px 3px #000}
 .hud p{margin:0}#src{color:var(--fg)}#cnt{font:11.5px var(--mono);color:var(--mut);margin-top:2px}
@@ -27,13 +32,13 @@ button{font:inherit;color:inherit}
 .panel{position:fixed;right:16px;top:calc(62px + env(safe-area-inset-top,0px));width:310px;max-width:calc(100% - 32px);max-height:calc(100% - 96px);overflow:auto;padding:4px 16px 14px;
  opacity:0;visibility:hidden;transform:translateY(-6px);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
 .panel.open{opacity:1;visibility:visible;transform:none}
-.ph{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 2px}.ph b{font:500 19px var(--head)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 2px}.ph b{font:500 15px var(--head)}
 .link{background:none;border:0;color:var(--mut);cursor:pointer;font-size:12px;padding:2px 0;text-decoration:underline;text-underline-offset:3px}.link:hover{color:var(--fg)}
-.sec{font:italic 500 14px var(--head);margin:16px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.sec{font:500 13px var(--head);margin:16px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;position:relative}
 .row.col{display:block;padding:6px 0}.rl{display:flex;justify-content:space-between}.rl b{font:500 12px var(--mono);color:var(--acc)}
 .seg{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
-.seg button{background:none;border:0;padding:4px 10px;cursor:pointer;font-size:12px;color:var(--mut)}.seg button+button{border-left:1px solid var(--rule)}
+.seg button{background:none;border:0;padding:4px 8px;cursor:pointer;font-size:12px;color:var(--mut)}.seg button+button{border-left:1px solid var(--rule)}
 .seg button.on{background:var(--fg);color:var(--bg);font-weight:500}
 .sw{cursor:pointer}.sw input{position:absolute;opacity:0;pointer-events:none}
 .sw i{width:34px;height:18px;border:1px solid var(--mut);border-radius:3px;position:relative;flex:none;transition:background .15s,border-color .15s}
@@ -52,14 +57,14 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 /* details panel */
 .dpanel{position:fixed;right:16px;top:calc(62px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:370px;max-width:calc(100% - 32px);padding:20px 20px 14px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(14px);transition:opacity .26s ease,transform .26s ease,visibility .26s}
 .dpanel.open{opacity:1;visibility:visible;transform:none}
-.dpanel h2{margin:0 30px 3px 0;font:500 24px/1.15 var(--head);letter-spacing:-.01em}.dpanel .sub{color:var(--mut);font-size:12px}
+.dpanel h2{margin:0 30px 3px 0;font:500 17px/1.3 var(--head)}.dpanel .sub{color:var(--mut);font-size:12px}
 .dx{position:absolute;right:12px;top:12px;width:26px;height:26px;border:1px solid var(--rule);border-radius:3px;background:none;cursor:pointer;font-size:16px;line-height:1;padding:0}.dx:hover{border-color:var(--mut)}
 .tiles{display:grid;grid-template-columns:1fr 1fr;margin:16px 0 2px;border-top:1px solid var(--rule)}
 .tile{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule)}.tile:nth-child(even){padding-left:12px;border-left:1px solid var(--rule)}
 .tile span{display:block;font-size:11.5px;color:var(--mut)}
-.tile b{display:block;font:500 23px/1.2 var(--head);letter-spacing:-.01em;font-variant-numeric:lining-nums tabular-nums}
+.tile b{display:block;font:500 19px/1.25 var(--head);letter-spacing:-.02em;font-variant-numeric:lining-nums tabular-nums}
 .tile small{display:block;color:var(--mut);font-size:11px;line-height:1.3;min-height:14px}
-.dh{font:italic 500 14.5px var(--head);margin:20px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.dh{font:500 13px var(--head);margin:20px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .ev{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule)}
 .mag{flex:none;width:46px;height:28px;border-radius:3px;display:grid;place-items:center;font:600 12.5px var(--mono)}
 .ev .t{min-width:0}.ev .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ev .t small{color:var(--mut);font-size:11.5px}
@@ -84,7 +89,7 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 .fpanel{position:fixed;left:16px;top:calc(62px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:340px;max-width:calc(100% - 32px);z-index:30;display:flex;flex-direction:column;padding:14px 16px 12px;
  opacity:0;visibility:hidden;transform:translateX(-14px);transition:opacity .22s,transform .22s,visibility .22s}
 .fpanel.open{opacity:1;visibility:visible;transform:none}
-.fhead{display:flex;align-items:baseline;gap:10px;padding-right:30px}.fhead b{font:500 22px var(--head)}#fCount{color:var(--mut);font-size:12px}
+.fhead{display:flex;align-items:baseline;gap:10px;padding-right:30px}.fhead b{font:500 16px var(--head)}#fCount{color:var(--mut);font-size:12px}
 .fx{position:absolute;right:12px;top:12px;width:26px;height:26px;border:1px solid var(--rule);border-radius:3px;background:none;cursor:pointer;font-size:16px;line-height:1;padding:0}.fx:hover{border-color:var(--mut)}
 .fsearch{position:relative;margin:12px 0 6px}
 .fsearch input{width:100%;background:var(--bg);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;color:var(--fg);font:inherit}.fsearch input:focus{outline:none;border-color:var(--acc)}
@@ -95,11 +100,11 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 .chip.sel{background:var(--acc);border-color:var(--acc);color:#14110a}
 .ftabs{margin:8px 0}.ftabs button{flex:1}
 .fbody{flex:1;min-height:0;overflow:auto;padding-right:2px}
-.fl{font:italic 500 14px var(--head);margin:12px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.fl{font:500 13px var(--head);margin:12px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
 .frow{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule);cursor:pointer}.frow:hover{background:rgba(255,255,255,.05)}
 .rk{flex:none;width:22px;color:var(--mut);font:12px var(--mono);text-align:right}
 .fi{min-width:0;flex:1}.fi b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fi small,.fv small{color:var(--mut);font-size:11.5px;display:block}
-.fv{text-align:right;flex:none}.fv b{font:500 16px var(--head)}
+.fv{text-align:right;flex:none}.fv b{font:500 14px var(--head)}
 select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-radius:3px;padding:4px 6px;font:inherit}
 .f-open .zoomk{left:372px}.zoomk{transition:left .25s ease,opacity .9s ease .15s}
 .fbtn{transition:opacity .9s ease .15s}.intro-on .fbtn{opacity:0;pointer-events:none}
@@ -107,9 +112,9 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 #introEl{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;justify-content:space-between;padding:clamp(22px,4.5vw,56px);cursor:pointer;
  background:linear-gradient(90deg,rgba(10,11,13,.9) 0%,rgba(10,11,13,.62) 36%,rgba(10,11,13,0) 66%);transition:opacity .9s ease}
 #introEl.out{opacity:0}
-#introEl h1{font:500 clamp(56px,10vw,136px)/.92 var(--head);letter-spacing:-.035em;margin:0}
-.itag{font:italic 400 clamp(18px,2.2vw,26px) var(--head);color:var(--acc);margin:10px 0 18px}
-#introEl p{margin:0 0 10px;max-width:min(440px,88vw);font-size:15px;line-height:1.55;color:#d6d1c4}
+#introEl h1{font:400 clamp(26px,6.4vw,88px)/1.15 var(--pixel);letter-spacing:.03em;text-transform:uppercase;margin:0;text-shadow:.07em .07em 0 #6b4a1d}
+.itag{font:400 clamp(13px,1.5vw,16px) var(--head);color:var(--acc);margin:18px 0 18px;letter-spacing:.02em}
+#introEl p{margin:0 0 10px;max-width:min(460px,88vw);font-size:13.5px;line-height:1.6;color:#d6d1c4}
 #introEl .imut{color:var(--mut);font-size:12.5px}
 .icta{font:500 13px var(--mono);letter-spacing:.06em;margin-bottom:8px}
 .caret{display:inline-block;width:8px;height:15px;background:var(--acc);margin-left:8px;vertical-align:-3px;animation:blink 1.1s steps(2,start) infinite}
@@ -125,7 +130,7 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 @keyframes ping{0%{transform:scale(.7);opacity:.95}100%{transform:scale(1.7);opacity:0}}
 .tourcard{position:fixed;z-index:70;width:320px;padding:16px 18px 14px;border-left:3px solid var(--acc);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .22s,transform .22s,visibility .22s,left .25s,top .25s}
 .tourcard.on{opacity:1;visibility:visible;transform:none}
-.tourcard h3{font:500 19px/1.25 var(--head);margin:2px 0 6px}.tourcard p{margin:0;color:#cfcabd}.tourcard .tsub{margin-top:8px;color:var(--mut);font-size:12px}
+.tourcard h3{font:500 15px/1.3 var(--head);margin:2px 0 6px}.tourcard p{margin:0;color:#cfcabd}.tourcard .tsub{margin-top:8px;color:var(--mut);font-size:12px}
 .tstep{font:500 10.5px var(--mono);color:var(--acc);min-height:12px}
 .tbtn{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
 </style></head><body>
@@ -461,4 +466,10 @@ function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
   if(intro.on&&!intro.t0)globe.rotation.y+=.12*dt;else if(spin&&!fly&&!(tour.on&&tour.i>0)&&!(hoverPause&&hov)&&now-lastClick>resumeMs)globe.rotation.y+=AUTO*dt}   // keeps spinning while the mouse moves; a click stops it
  ren.render(scene,cam)}
 (function loop(){requestAnimationFrame(loop);tick(performance.now())})();
-</script></body></html>
+</script><script>
+// start the fade once web fonts are ready (never wait more than 1.5 s); a second timer is a failsafe so the page can't stay blank
+Promise.race([document.fonts?document.fonts.ready:0,new Promise(r=>setTimeout(r,1500))]).then(()=>document.body.classList.add('go'));
+setTimeout(()=>document.body.classList.add('go'),2500);
+</script>
+<noscript><style>body{opacity:1;animation:none}</style></noscript>
+</body></html>

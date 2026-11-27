@@ -34,6 +34,13 @@ def evaluate(df, y, models, heuristic):
     leaky, _ = cv(df, list(models.values())[-1], y, spatial=False)
     return pd.DataFrame(rows).round(3), imp.sort_values(ascending=False).round(4), round(leaky["auc"], 3)
 
+def _clean(o):
+    """NaN/inf are not valid JSON (browsers reject them), so write them as null."""
+    if isinstance(o, dict): return {k: _clean(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)): return [_clean(v) for v in o]
+    if isinstance(o, (float, np.floating)): o = float(o); return None if (o != o or o in (float("inf"), float("-inf"))) else o
+    return o
+
 def main():
     from common import connect
     from features import build
@@ -74,7 +81,7 @@ def main():
                     pop=int(r.pop100), impact=round(r.impact, 3), accel=round(r.accel, 3)) for r in z.itertuples()], open("zones.json", "w"))
     top = now.sort_values("expected_exposed", ascending=False).head(10)[["lat", "lon", "risk", "pop100", "expected_exposed"]].round(2)
     print(f"\n{len(z)} zones -> zones.json\n\nTop 10 by expected human exposure (risk x population within 100km):\n{top.to_string(index=False)}")
-    out["top_exposure"] = top.to_dict("records"); import details; details.write(details.build(conn, now, z, str(today.date()))); json.dump(out, open("metrics.json", "w"), indent=1, default=float)
+    out["top_exposure"] = top.to_dict("records"); import details; details.write(details.build(conn, now, z, str(today.date()))); json.dump(_clean(out), open("metrics.json", "w"), indent=1, default=float, allow_nan=False)
     import os, shutil                                   # also drop results into the website folder
     if os.path.isdir("vercel-site/public"):
         for f in ("zones.json", "metrics.json", "details.json"): shutil.copy(f, f"vercel-site/public/{f}")

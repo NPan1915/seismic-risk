@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismik</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -108,6 +108,26 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-radius:3px;padding:4px 6px;font:inherit}
 .f-open .zoomk{left:372px}.zoomk{transition:left .25s ease,opacity .9s ease .15s}
 .fbtn{transition:opacity .9s ease .15s}.intro-on .fbtn{opacity:0;pointer-events:none}
+/* top-right buttons, toast, about, live */
+.tbar{position:fixed;right:62px;top:calc(16px + env(safe-area-inset-top,0px));display:flex;gap:8px}
+.tb{height:38px;padding:0 12px;cursor:pointer;font-size:12.5px;display:flex;align-items:center}.tb:hover{border-color:var(--mut)}
+.tb.on{border-color:var(--acc);color:var(--acc)}
+.ldot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mut);margin-right:7px}.tb.on .ldot{background:#fff6c2}
+#liveLine{font:11.5px var(--mono);color:var(--acc);margin-top:2px}
+#toastEl{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);padding:8px 14px;background:var(--panel);border:1px solid var(--acc);border-radius:3px;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility .2s;z-index:90;pointer-events:none;max-width:calc(100% - 32px);word-break:break-all}
+#toastEl.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
+#aboutBack{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,8,.74);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+#aboutBack.open{opacity:1;visibility:visible}
+.about{position:relative;width:min(680px,100%);max-height:100%;overflow:auto;padding:22px 24px 18px}
+.about h2{font:500 17px var(--head);margin:0 28px 2px 0}.about .sub{color:var(--mut);font-size:12px}
+.about h3{font:500 13px var(--head);margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.about p,.about li{color:#cfcabd}.about ul{margin:6px 0;padding-left:18px}.about li{margin:5px 0}.about a{color:var(--acc)}
+.warn{border:1px solid var(--rule);border-left:3px solid var(--acc);padding:10px 12px;margin:14px 0;color:var(--fg);line-height:1.55}
+.auc{margin:8px 0}.arow{display:grid;grid-template-columns:minmax(0,1fr) 110px 46px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--rule)}
+.abar{height:6px;background:var(--track)}.abar i{display:block;height:100%;background:var(--mut)}
+.arow b{font-weight:500;text-align:right}.arow.hl span,.arow.hl b{color:var(--acc)}.arow.hl .abar i{background:var(--acc)}
+.dh2{font-size:12px;color:var(--mut);margin:14px 0 2px}
+.tbar,.tb{transition:opacity .9s ease .15s,border-color .15s}.intro-on .tbar{opacity:0;pointer-events:none}
 /* intro screen */
 #introEl{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;justify-content:space-between;padding:clamp(22px,4.5vw,56px);cursor:pointer;
  background:linear-gradient(90deg,rgba(10,11,13,.9) 0%,rgba(10,11,13,.62) 36%,rgba(10,11,13,0) 66%);transition:opacity .9s ease}
@@ -134,7 +154,8 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 .tstep{font:500 10.5px var(--mono);color:var(--acc);min-height:12px}
 .tbtn{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
 </style></head><body>
-<div class="hud"><p id="src"></p><p id="cnt"></p></div>
+<div class="hud"><p id="src"></p><p id="cnt"></p><p id="liveLine"></p></div>
+<div class="tbar"><button class="tb glass" id="liveBtn" aria-pressed="false"><i class="ldot"></i><span id="liveTxt">Live</span></button><button class="tb glass" id="shareBtn">Share</button><button class="tb glass" id="aboutBtn">About</button></div>
 <button class="gear glass" id="gear" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 <div class="panel glass" id="panel" role="dialog" aria-label="Settings">
  <div class="ph"><b>Settings</b><button class="link" id="resetBtn">Reset to defaults</button></div>
@@ -142,6 +163,8 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
  <div class="row"><span>Color by</span><div class="seg" id="seg"><button data-m="vol">Volatility</button><button data-m="impact">Human impact</button></div></div>
  <div class="row col"><div class="rl"><span>Grouping</span><b id="grpL"></b></div><input id="grp" type="range" min="0" max="200" step="10"></div>
  <label class="row sw"><span>Grid lines</span><input id="gridSw" type="checkbox"><i></i></label>
+ <label class="row sw"><span>Live quakes (last 24 h)</span><input id="liveSw" type="checkbox"><i></i></label>
+ <div class="row col"><div class="rl"><span>Live minimum magnitude</span><b id="lmL"></b></div><input id="lmR" type="range" min="0" max="60"></div>
  <div class="sec">Motion</div>
  <label class="row sw"><span>Auto-spin</span><input id="spinSw" type="checkbox"><i></i></label>
  <div class="row col"><div class="rl"><span>Spin speed</span><b id="spdL"></b></div><input id="spd" type="range" min="0" max="25"></div>
@@ -179,11 +202,37 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
  </div>
 </aside>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
+<div id="toastEl" role="status"></div>
+<div id="aboutBack"><div class="about glass" id="about" role="dialog" aria-modal="true" aria-label="About Seismos">
+ <button class="fx" id="aboutClose" aria-label="Close">&times;</button>
+ <h2>About Seismos</h2><div class="sub">Where the Earth shakes. A global earthquake atlas and risk ranking.</div>
+ <div class="warn"><b>A ranking, not a prediction.</b> Seismos compares regions by how often large earthquakes have struck them and by what a model learned from that history. It cannot say when or where any particular earthquake will happen, and it must not be used for safety, evacuation, construction, insurance or emergency decisions. For official guidance, see the USGS and your local emergency agency.</div>
+ <h3>What the numbers mean</h3>
+ <ul><li><b>Risk</b>: the model's score for an M6+ earthquake in a 2&deg; zone within the next 10 years. A relative ranking, not a probability.</li>
+ <li><b>Volatility</b>: how erratic a zone's seismic behavior is (spread of magnitudes plus recent activity), shown as a percentile among all zones.</li>
+ <li><b>Human impact</b>: risk combined with the number of people within 100 km, to show where a big earthquake would affect the most people.</li>
+ <li><b>Rate-rise chance</b>: an exploratory estimate that a zone's M4.5+ rate climbs to 1.5&times; within 10 years.</li>
+ <li><b>Live layer</b>: real earthquakes from the USGS feed for the last 24 hours. It is not part of the model.</li></ul>
+ <h3>How well does it work?</h3><div id="aboutMetrics"><p class="note">Loading validation results&hellip;</p></div>
+ <h3>Limits</h3>
+ <ul><li>Before 1973 the dataset only includes M5.5 and larger; nothing before 1900 is included, so counts are biased toward recent decades.</li>
+ <li>Aftershock clusters are not removed, which inflates the activity of zones after a big quake.</li>
+ <li>Zones are 2&deg; &times; 2&deg; cells (about 220 km). Each gets one country label; offshore zones are labeled with the nearest coast.</li>
+ <li>People are counted from city populations (cities of 15,000+) within 100 km. Rural population, building quality, soil and tsunamis are not modeled.</li>
+ <li>Model scores are class-balanced, so they run high. Use them to compare places, not as chances.</li></ul>
+ <h3>Data and credits</h3>
+ <ul><li>Earthquakes: <a href="https://earthquake.usgs.gov/data/comcat/" target="_blank" rel="noopener">USGS ComCat catalog</a> and <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener">live feeds</a></li>
+ <li>Plate boundaries: Bird (2003), <a href="https://doi.org/10.1029/2001GC000252" target="_blank" rel="noopener">PB2002</a></li>
+ <li>City populations: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)</li>
+ <li>Borders and coastlines: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> (public domain)</li>
+ <li>Built with PostGIS, scikit-learn and <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>; fonts IBM Plex Mono and Press Start 2P (Google Fonts, OFL)</li>
+ <li><a href="https://github.com/NPan1915/seismic-risk" target="_blank" rel="noopener">Source code on GitHub</a></li></ul>
+</div></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
-<div id="introEl"><div class="itop"><h1>Seismik</h1>
- <p>A global earthquake atlas built using 125 years of USGS records. Our machine learning model shows volatile seismic regions, ranks them by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
- <p>A risk ranking, not a prediction model.</p></div>
- <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="icta">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
+<div id="introEl"><div class="itop"><h1>Seismos</h1><div class="itag">Where the Earth shakes.</div>
+ <p>A global earthquake atlas built on 125 years of USGS records. A machine-learning model ranks regions by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
+ <p class="imut">A risk ranking, not a prediction.</p></div>
+ <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="imut">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
 <div id="tourBlock"></div><div id="tourHL"></div><div id="tourPing"></div>
 <div class="tourcard glass" id="tourCard" role="dialog" aria-live="polite"><div class="tstep" id="tStep"></div><h3 id="tTitle"></h3><p id="tText"></p><p class="tsub" id="tSub"></p>
  <div class="tbtn"><button class="link" id="tSkip">Skip tour</button><span><button class="btn" id="tBack">Back</button> <button class="btn pri" id="tNext">Next</button></span></div></div>
@@ -216,7 +265,7 @@ const dots=new THREE.Group();globe.add(dots);
 let mode='vol',hov=null,minRisk=.3,level=0,drag=false,px=0,py=0,wy=0,wx=0,hist=[],spin=true,lastMove=0,gs=1,lastClick=-1e18,hoverPause=true,resumeMs=3000,tour={on:false,i:0,el:null},intro={on:false,hold:false,t0:0,z0:380,x0:0},DET=null,detTried=false,downInfo=null,mx=-100,my=-100,rx=-100,ry=-100,ringOn=false;
 let FRICTION=1.8,AUTO=.07;const MAXW=14,TILT=1.45;   // glide decay, idle drift rad/s (both set from Settings); max fling speed; max tilt
 const cb=document.body.classList,FINE=typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches;
-const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a',tutorial:true,intro:true};
+const DEF={mode:'vol',minRisk:30,grp:100,grid:true,spin:true,spd:7,glide:42,cursor:true,hoverPause:true,resume:3,curColor:'#ff5a5a',tutorial:true,intro:true,live:false,lm:25};
 const S={...DEF};try{Object.assign(S,JSON.parse(localStorage.getItem('seismic-settings')||'{}'))}catch(_){}
 const save=()=>{try{localStorage.setItem('seismic-settings',JSON.stringify(S))}catch(_){}};
 // ---- data prep: percentile ranks so shades spread evenly across the red scale ----
@@ -241,7 +290,7 @@ function build(){while(dots.children.length)dots.remove(dots.children[0]);hov=nu
  for(const c of cluster(vis,LV[level][1]*gs)){const m=c.m,k=m.length,v=new THREE.Vector3();let t=0,rk=0,vo=0,im=0,mx=0,pp=0,ac=0;
   m.forEach(z=>{v.addScaledVector(z.v3,z.risk);t+=z[key];rk+=z.risk;vo+=z.vol;im+=z.impact;mx=Math.max(mx,z.maxmag);pp=Math.max(pp,z.pp||0);ac+=z.accel||0});
   const s=k===1?.7+Math.sqrt(m[0].risk)*.9:Math.min(11,1.8+1.15*Math.sqrt(k));   // bigger groups -> bigger circle
-  const mesh=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:shade(t/k),transparent:k>1,opacity:k>1?.9:1}));
+  const mesh=new THREE.Mesh(GEO,new THREE.MeshBasicMaterial({color:shade(t/k),transparent:k>1||S.live,opacity:S.live?(k>1?.5:.65):(k>1?.9:1),depthWrite:!S.live}));
   mesh.userData={k,s,lat:m[0].lat,lon:m[0].lon,risk:rk/k,vol:vo/k,impact:im/k,maxmag:mx,pop:m[0].pp===undefined?undefined:(k===1?m[0].pp:pp),accel:ac/k,keys:m.map(z=>z.key),members:m};
   mesh.scale.setScalar(s);mesh.position.copy(v.normalize().multiplyScalar(R+s*.45));dots.add(mesh)}
  cnt.textContent=dots.children.length+' markers \u00b7 '+vis.length+' zones shown';fUpdate(vis)}
@@ -258,23 +307,24 @@ const popTip=(n,pre)=>n===undefined?'':' \u00b7 '+pre+Math.round(n).toLocaleStri
 const fmt=u=>u.k>1
  ?`${u.k} zones \u00b7 avg risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 impact ${u.impact.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'up to ')+' \u00b7 zoom in to split'
  :`Cell ${dm(u.lat,'N','S')} ${dm(u.lon,'E','W')} \u00b7 risk ${u.risk*100|0}% \u00b7 volatility ${u.vol.toFixed(2)} \u00b7 max M${u.maxmag}`+popTip(u.pop,'')+(u.accel?` \u00b7 rate-rise chance ${u.accel*100|0}%`:'');
-function hover(cx,cy){const h=pick(cx,cy);if(hov&&hov!==h)hov.scale.setScalar(hov.userData.s);hov=h;
+function hover(cx,cy){const lv=pickLive(cx,cy);liveHov=lv?lv.userData.e:null;const h=lv?null:pick(cx,cy);if(hov&&hov!==h)hov.scale.setScalar(hov.userData.s);hov=h;
  if(h)h.scale.setScalar(h.userData.s*(h.userData.k>1?1.15:1.9));
- tip.textContent=h?fmt(h.userData):'Hover a circle or dot';cb.toggle('c-hover',!!h)}
+ tip.textContent=lv?fmtLive(lv.userData.e):h?fmt(h.userData):'Hover a circle or dot';cb.toggle('c-hover',!!(h||lv))}
 const ppr=()=>R*innerHeight/(2*Math.tan(Math.PI/8)*(cam.position.z-R));   // screen pixels per radian at the globe's surface, so the point you grab follows the cursor
 const clampW=w=>Math.max(-MAXW,Math.min(MAXW,w));
 el.onpointerdown=e=>{fly=null;drag=true;wy=wx=0;px=e.clientX;py=e.clientY;lastMove=lastClick=performance.now();hist=[{t:lastMove,x:px,y:py}];
  try{el.setPointerCapture(e.pointerId)}catch(_){}cb.add('c-grab');hover(e.clientX,e.clientY);
- downInfo={x:px,y:py,t:lastMove,hit:hov};if(!hov)closeDetail()};
+ downInfo={x:px,y:py,t:lastMove,hit:hov,live:liveHov};if(!hov&&!liveHov)closeDetail()};
 const release=()=>{if(!drag)return;drag=false;cb.remove('c-grab');const n=lastClick=performance.now();hist=hist.filter(h=>n-h.t<100);
  if(downInfo&&downInfo.hit&&Math.hypot(px-downInfo.x,py-downInfo.y)<6&&n-downInfo.t<500){wy=wx=0;hist=[];openDetail(downInfo.hit);downInfo=null;return}   // a click (not a drag) on a marker
+ if(downInfo&&downInfo.live&&downInfo.live.url&&Math.hypot(px-downInfo.x,py-downInfo.y)<6&&n-downInfo.t<500){try{window.open(downInfo.live.url,'_blank','noopener')}catch(_){}wy=wx=0;hist=[];downInfo=null;return}   // click a live quake -> its USGS page
  downInfo=null;
  if(hist.length>1){const a=hist[0],b=hist[hist.length-1],dt=(b.t-a.t)/1000;
   if(dt>.005){wy=clampW((b.x-a.x)/dt/ppr());wx=clampW((b.y-a.y)/dt/ppr())}}   // release velocity = recent pointer speed
  hist=[]};
 onpointerup=release;onpointercancel=release;
 onpointermove=e=>{const n=lastMove=performance.now();curMove(e);
- const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel,.tourcard,#tourBlock,#introEl,.fpanel,.fbtn');cb.toggle('c-ui',!!ui);
+ const ui=e.target&&e.target.closest&&e.target.closest('.hud,.panel,.gear,.zoomk,#tip,.dpanel,.tourcard,#tourBlock,#introEl,.fpanel,.fbtn,.tbar,#aboutBack');cb.toggle('c-ui',!!ui);
  if(drag){const k=1/ppr();globe.rotation.y+=(e.clientX-px)*k;globe.rotation.x=Math.max(-TILT,Math.min(TILT,globe.rotation.x+(e.clientY-py)*k));
   px=e.clientX;py=e.clientY;if(downInfo&&Math.hypot(px-downInfo.x,py-downInfo.y)>6)closeDetail();hist.push({t:n,x:px,y:py});while(hist.length&&n-hist[0].t>100)hist.shift()}
  else if(ui)hover(-999,-999);else hover(e.clientX,e.clientY)};
@@ -285,12 +335,12 @@ zi.onclick=()=>zoom(-60);zo.onclick=()=>zoom(60);
 function syncUI(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.mode));
  minR.value=S.minRisk;minRL.textContent=S.minRisk+'%';grp.value=S.grp;grpL.textContent=S.grp===0?'Off':S.grp+'%';
  gridSw.checked=S.grid;spinSw.checked=S.spin;spd.value=S.spd;spdL.textContent=(S.spd/100*57.3).toFixed(0)+'\u00b0/s';
- glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;tutSw.checked=S.tutorial;introSw.checked=S.intro;hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
+ glide.value=S.glide;glL.textContent=S.glide<25?'Stiff':S.glide>70?'Slippery':'Medium';curSw.checked=S.cursor;tutSw.checked=S.tutorial;introSw.checked=S.intro;liveSw.checked=S.live;lmR.value=S.lm;lmL.textContent='M'+(S.lm/10).toFixed(1)+'+';hovSw.checked=S.hoverPause;resumeR.value=S.resume;resL.textContent=S.resume>=10?'Never':S.resume+'s';sws.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.curColor));
  
  document.querySelectorAll('input[type=range]').forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'))}
 function apply(){mode=S.mode;minRisk=S.minRisk/100;gs=S.grp/100;lines.visible=S.grid;spin=S.spin;AUTO=S.spd/100;hoverPause=S.hoverPause;resumeMs=S.resume>=10?1e15:S.resume*1000;document.documentElement.style.setProperty('--cur',S.curColor);FRICTION=4*Math.pow(.15,S.glide/100);
  const on=S.cursor&&FINE;cb.toggle('cursor-on',on);ringOn=on;curDot.style.display=curRing.style.display=on?'block':'none'}
-function change(p,rebuild){Object.assign(S,p);apply();if(rebuild)build();syncUI();save()}
+function change(p,rebuild){Object.assign(S,p);apply();if(rebuild)build();syncUI();save();urlSync()}
 seg.onclick=e=>{const m=e.target.dataset&&e.target.dataset.m;if(m)change({mode:m},true)};
 minR.oninput=()=>change({minRisk:+minR.value},true);grp.oninput=()=>change({grp:+grp.value},true);
 gridSw.onchange=()=>change({grid:gridSw.checked});spinSw.onchange=()=>{lastClick=-1e18;change({spin:spinSw.checked})};hovSw.onchange=()=>change({hoverPause:hovSw.checked});resumeR.oninput=()=>change({resume:+resumeR.value});
@@ -300,7 +350,7 @@ tutSw.onchange=()=>change({tutorial:tutSw.checked});introSw.onchange=()=>change(
 const setOpen=o=>{panel.classList.toggle('open',o);gear.setAttribute('aria-expanded',String(o))};
 gear.onclick=e=>{e.stopPropagation();setOpen(!panel.classList.contains('open'))};
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.panel,.gear'))setOpen(false);if(e.target!==el&&!e.target.closest('.dpanel'))closeDetail()});   // clicking anything except the details panel closes it
-onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&intro.on&&!intro.t0){begin();return}if(e.key==='Escape'){if(tour.on){tourEnd();return}setOpen(false);closeDetail();fOpen(false)}};
+onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&intro.on&&!intro.t0){begin();return}if(e.key==='Escape'){if(aboutBack.classList.contains('open')){aboutOpen(false);return}if(tour.on){tourEnd();return}setOpen(false);closeDetail();fOpen(false)}};
 // ---- details panel ----
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const magBg=m=>m>=8?'#a8001a':m>=7?'#e5383b':m>=6?'#ff6b4a':m>=5?'#ff9f68':'#ffc2b3';
@@ -334,8 +384,8 @@ function renderDetail(u){const A=agg(u),M=u.members,pc=f=>Math.round(M.reduce((s
  else h+=`<p class="note">${DET===null&&detTried?'Detailed event history was not found (details.json). Run train.py to generate it.':'Loading event history\u2026'}</p>`;
  dBody.innerHTML=h}
 async function loadDet(){if(detTried)return;detTried=true;try{const r=await fetch('details.json');if(r.ok)DET=await r.json()}catch(_){}}
-function closeDetail(force){if(!force&&tour.on&&tour.i>0)return;if(!detail.classList.contains('open'))return;detail.classList.remove('open');detail.setAttribute('aria-hidden','true');cb.remove('pan-open');if(OUT.parent)OUT.parent.remove(OUT)}
-async function openDetail(m){setOpen(false);m.add(OUT);detail.classList.add('open');detail.setAttribute('aria-hidden','false');cb.add('pan-open');renderDetail(m.userData);detail.scrollTop=0;
+function closeDetail(force){if(!force&&tour.on&&tour.i>0)return;if(!detail.classList.contains('open'))return;detail.classList.remove('open');detail.setAttribute('aria-hidden','true');cb.remove('pan-open');if(OUT.parent)OUT.parent.remove(OUT);selKey=null;urlSync()}
+async function openDetail(m){setOpen(false);selKey=m.userData.k===1?m.userData.keys[0]:null;urlSync();m.add(OUT);detail.classList.add('open');detail.setAttribute('aria-hidden','false');cb.add('pan-open');renderDetail(m.userData);detail.scrollTop=0;
  if(!detTried){await loadDet();if(OUT.parent===m)renderDetail(m.userData)}
  if(tour.on&&tour.i===0)tourGo(1)}
 dClose.onclick=()=>closeDetail();
@@ -355,7 +405,7 @@ const STEPS=[
  {sel:'mag',title:'Magnitude mix',text:'The share of this area\u2019s earthquakes in each size band, from small (under 5) to major (7+). Hover a segment for the exact count.'},
  {sel:'depth',title:'Depth profile',text:'Shallow earthquakes (under 70 km) tend to do the most damage near the surface; deep ones (over 300 km) are usually felt more weakly over a wider area.'},
  {sel:'dec',title:'Earthquakes per decade',text:'M5+ events in each decade from the 1900s to the 2020s. Hover a bar for the exact count. Recent decades look busier partly because modern instruments record more.'},
- {title:"You're all set",text:'Click anywhere outside this panel to close it, drag the globe to spin it, scroll or use + / \u2212 to zoom, use Search & filter on the left to narrow the globe by country, area or metrics, and open \u2699 Settings to change colors, grouping and more. You can replay this tutorial from Settings.'}];
+ {title:"You're all set",text:'Click anywhere outside this panel to close it, drag the globe to spin it, scroll or use + / \u2212 to zoom, use Search & filter on the left to narrow the globe by country, area or metrics, and open \u2699 Settings to change colors, grouping and more. Use Live to see the last 24 hours of quakes, Share to copy a link to this exact view, and About for how it works and how well it performs. You can replay this tutorial from Settings.'}];
 const tq=k=>detail.querySelector(`[data-t="${k}"]`);
 function tourEnd(){tour.on=false;tourBlock.classList.remove('on');tourHL.classList.remove('on');tourCard.classList.remove('on');tourPing.style.display='none'}
 function tourPlace(el){const W=innerWidth,H=innerHeight,cw=tourCard.offsetWidth||320,ch=tourCard.offsetHeight||190,st=tourCard.style;
@@ -411,7 +461,7 @@ function fSync(){fvL.textContent=F.vol?'\u2265 '+F.vol+'th':'any';fiL.textConten
  [fv,fi,fp,fm,fa,minR].forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'));
  fChips.innerHTML=F.chips.map((c,i)=>`<button class="chip sel" data-i="${i}" title="Remove">${esc(c.v)} \u00d7</button>`).join('')+(F.chips.length>1?'<button class="link" data-act="clear">Clear all</button>':'');
  fCont.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',F.chips.some(c=>c.t==='cont'&&c.v===b.dataset.v)))}
-const refresh=()=>{fSync();build()};
+const refresh=()=>{fSync();build();urlSync()};
 function setTab(t){F.tab=t;fFilters.style.display=t==='filters'?'block':'none';fResults.style.display=t==='results'?'block':'none';
  fTabs.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));if(t==='results')renderResults(lastVis)}
 function fOpen(o){fPanel.classList.toggle('open',o);cb.toggle('f-open',o);if(o){fSync();fUpdate(lastVis);if(F.tab==='results')renderResults(lastVis)}else hideSugg()}
@@ -431,12 +481,81 @@ fChips.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.
 fCont.onclick=e=>{const b=e.target.closest('.chip');if(!b)return;const i=F.chips.findIndex(c=>c.t==='cont'&&c.v===b.dataset.v);i>=0?F.chips.splice(i,1):F.chips.push({t:'cont',v:b.dataset.v});refresh()};
 fTabs.onclick=e=>{const t=e.target.dataset&&e.target.dataset.t;if(t)setTab(t)};
 [[fv,'vol'],[fi,'imp'],[fp,'pop'],[fm,'mag'],[fa,'acc']].forEach(([el,k])=>el.oninput=()=>{F[k]=+el.value;refresh()});
-fSort.onchange=()=>{F.sort=fSort.value;renderResults(lastVis)};
+fSort.onchange=()=>{F.sort=fSort.value;renderResults(lastVis);urlSync()};
 fReset.onclick=()=>{Object.assign(F,{q:'',chips:[],vol:0,imp:0,pop:0,mag:40,acc:0});fQ.value='';hideSugg();change({minRisk:DEF.minRisk},true);fSync()};
 fList.onclick=e=>{const r=e.target.closest('.frow');if(r&&BYKEY[r.dataset.k])flyTo(BYKEY[r.dataset.k])};
 // fly the globe to a zone (rotate + zoom), then open its details
 function flyTo(z){if(intro.on||(tour.on&&tour.i>0))return;const wrap=(c,t)=>c+(((t-c+Math.PI)%(2*Math.PI))+2*Math.PI)%(2*Math.PI)-Math.PI;
  wy=wx=0;fly={t0:performance.now(),d:1100,y0:globe.rotation.y,x0:globe.rotation.x,yt:wrap(globe.rotation.y,-z.lon*Math.PI/180),xt:Math.max(-TILT,Math.min(TILT,z.lat*Math.PI/180)),z0:cam.position.z,zt:Math.min(cam.position.z,170),zone:z}}
+// ---- live quakes: USGS feed, last 24 hours ----
+const LIVE_URL='https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson',liveGroup=new THREE.Group(),LGEO=new THREE.SphereGeometry(1,10,8);
+globe.add(liveGroup);
+let LIVE=[],liveAt=0,liveErr=false,liveTimer=0,liveHov=null;
+const agoLive=ms=>{const m=Math.round(ms/6e4);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' h ago'};
+const liveColor=age=>new THREE.Color('#fff6c2').lerp(new THREE.Color('#d98a1f'),Math.min(1,age/864e5));   // newest = bright, oldest = amber
+function buildLive(){while(liveGroup.children.length)liveGroup.remove(liveGroup.children[0]);
+ if(S.live){const now=Date.now();LIVE.forEach(e=>{if(e.mag<S.lm/10)return;const age=now-e.time,s=.5+.5*Math.pow(Math.max(e.mag-2,0),1.25),m=new THREE.Mesh(LGEO,new THREE.MeshBasicMaterial({color:liveColor(age)}));
+  m.scale.setScalar(s);m.position.copy(P(e.lat,e.lon,R+s*.4));m.userData={e,s,fresh:age<36e5};liveGroup.add(m)})}
+ liveStatus()}
+function liveStatus(){const n=liveGroup.children.length;liveBtn.classList.toggle('on',!!S.live);liveBtn.setAttribute('aria-pressed',String(!!S.live));
+ liveTxt.textContent=S.live&&n?'Live \u00b7 '+n:'Live';
+ liveLine.textContent=!S.live?'':(liveErr&&!LIVE.length)?'Live feed unavailable right now':'Live: '+n+' quake'+(n===1?'':'s')+' M'+(S.lm/10).toFixed(1)+'+ in the last 24 h'+(liveAt?' \u00b7 updated '+agoLive(Date.now()-liveAt):'')}
+async function loadLive(){try{const r=await fetch(LIVE_URL);if(!r.ok)throw new Error(r.status);const j=await r.json();
+  LIVE=j.features.filter(f=>f.geometry&&f.properties&&f.properties.mag!=null).map(f=>({lon:f.geometry.coordinates[0],lat:f.geometry.coordinates[1],depth:f.geometry.coordinates[2],mag:f.properties.mag,place:f.properties.place||'',time:f.properties.time,url:f.properties.url}));liveAt=Date.now();liveErr=false}
+ catch(_){liveErr=true}buildLive()}
+function setLive(on,persist=true){S.live=on;clearInterval(liveTimer);if(on){loadLive();liveTimer=setInterval(()=>{Date.now()-liveAt>3e5?loadLive():buildLive()},6e4)}else buildLive();
+ build();syncUI();if(persist)save();urlSync()}
+function pickLive(cx,cy){if(!S.live)return null;let best=null,bd=1e9;globe.updateMatrixWorld(true);
+ liveGroup.children.forEach(m=>{m.getWorldPosition(v3);if(v3.dot(cam.position)<R*R)return;const dist=cam.position.distanceTo(v3),pr=m.userData.s*innerHeight/(2*Math.tan(Math.PI/8)*dist),thr=Math.max(9,pr+4),p=v3.clone().project(cam),d=Math.hypot((p.x+1)/2*innerWidth-cx,(1-p.y)/2*innerHeight-cy);if(d<thr&&d<bd){bd=d;best=m}});return best}
+const fmtLive=e=>'M'+e.mag.toFixed(1)+' \u00b7 '+esc(e.place||'Unnamed location')+' \u00b7 '+agoLive(Date.now()-e.time)+(e.depth==null?'':' \u00b7 '+Math.round(e.depth)+' km deep')+' \u00b7 click to open on USGS';
+liveSw.onchange=()=>setLive(liveSw.checked);liveBtn.onclick=()=>setLive(!S.live);
+lmR.oninput=()=>{change({lm:+lmR.value});buildLive()};
+// ---- shareable links: filters + selected zone live in the URL hash ----
+let selKey=null,urlT=0,toastT=0;
+function stateParams(){const p=new URLSearchParams();
+ if(selKey)p.set('z',selKey);
+ if(F.chips.length)p.set('c',F.chips.map(c=>c.t+':'+c.v).join('|'));
+ if(F.q.trim())p.set('q',F.q.trim());
+ if(F.vol)p.set('v',F.vol);if(F.imp)p.set('i',F.imp);if(F.pop)p.set('p',F.pop);if(F.mag!==40)p.set('m',F.mag);if(F.acc)p.set('a',F.acc);
+ if(S.minRisk!==DEF.minRisk)p.set('r',S.minRisk);if(F.sort!=='risk')p.set('s',F.sort);if(S.mode!==DEF.mode)p.set('col',S.mode);
+ if(S.live){p.set('live',1);if(S.lm!==DEF.lm)p.set('lm',S.lm)}
+ return p}
+const shareURL=()=>{const q=stateParams().toString();return location.origin+location.pathname+location.search+(q?'#'+q:'')};
+function writeURL(){try{const q=stateParams().toString();history.replaceState(null,'',location.pathname+location.search+(q?'#'+q:''))}catch(_){}}
+const urlSync=()=>{clearTimeout(urlT);urlT=setTimeout(writeURL,250)};
+function readURL(){let p;try{p=new URLSearchParams(location.hash.slice(1))}catch(_){return null}if(![...p.keys()].length)return null;
+ const n=(k,lo,hi,d)=>{const v=+p.get(k);return p.has(k)&&isFinite(v)?Math.max(lo,Math.min(hi,v)):d};
+ return{z:p.get('z'),chips:(p.get('c')||'').split('|').filter(Boolean).map(x=>{const i=x.indexOf(':');return{t:x.slice(0,i),v:x.slice(i+1)}}).filter(c=>['country','sub','cont'].includes(c.t)&&c.v),
+  q:(p.get('q')||'').slice(0,60),vol:n('v',0,99,0),imp:n('i',0,99,0),pop:Math.round(n('p',0,7,0)),mag:Math.round(n('m',40,95,40)),acc:n('a',0,100,0),minRisk:n('r',0,90,DEF.minRisk),
+  sort:['risk','impact','vol','pop','mag','acc'].includes(p.get('s'))?p.get('s'):'risk',mode:p.get('col')==='impact'?'impact':DEF.mode,live:p.get('live')==='1',lm:n('lm',0,60,DEF.lm)}}
+const SHARED=readURL(),SKIP=!!SHARED;   // a link with state skips the intro screen and tutorial
+function applyShared(st){Object.assign(F,{chips:st.chips,q:st.q,vol:st.vol,imp:st.imp,pop:st.pop,mag:st.mag,acc:st.acc,sort:st.sort});
+ Object.assign(S,{minRisk:st.minRisk,mode:st.mode,lm:st.lm});apply();syncUI();fQ.value=st.q;fSync();     // not saved: a shared link doesn't overwrite your own settings
+ if(st.live!==!!S.live)setLive(st.live,false);else build();
+ if(F.chips.length||F.q||st.vol||st.imp||st.pop||st.mag>40||st.acc){fOpen(true);setTab('results')}
+ const z=st.z&&BYKEY[st.z];if(z)flyTo(z)}
+function toast(msg){toastEl.textContent=msg;toastEl.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove('on'),2400)}
+shareBtn.onclick=async()=>{writeURL();const u=shareURL();let ok=false;
+ try{await navigator.clipboard.writeText(u);ok=true}catch(_){try{const t=document.createElement('textarea');t.value=u;document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(__){}}
+ toast(ok?'Link copied to clipboard':'Copy this link: '+u)};
+// ---- about / methodology (reads the validation numbers from metrics.json) ----
+let MET=null,metTried=false;
+const FEAT={n_m6_hist:'Past M6+ count',n_recent10:'M4.5+ events, last 10 yr',n_prior10:'M4.5+ events, prior 10 yr',n_hist:'Total past events',depth_mean:'Average depth',mag_mean:'Average magnitude',mag_max:'Largest magnitude',depth_std:'Depth variation',mag_std:'Magnitude variation',dist_boundary_km:'Distance to plate boundary',rate_ratio:'Recent vs prior rate'};
+function renderMetrics(){const M=MET;if(!M||!M.hazard||!M.hazard.table){aboutMetrics.innerHTML='<p class="note">Validation results (metrics.json) are not available in this view. The training pipeline produces them every week.</p>';return}
+ const H=M.hazard,rows=H.table,full=rows.find(r=>/^D\./.test(r.model))||rows[0],others=rows.filter(r=>r!==full),best=others.reduce((a,b)=>b.auc>a.auc?b:a,others[0]||full);
+ const nm=r=>esc(r.model.replace(/^[A-D]\.\s*/,'').replace(/^heuristic:\s*/,'baseline: '));
+ const arow=r=>'<div class="arow'+(r===full?' hl':'')+'"><span>'+nm(r)+'</span><div class="abar"><i style="width:'+Math.max(0,Math.min(100,(r.auc-.5)/.5*100))+'%"></i></div><b>'+r.auc.toFixed(3)+'</b></div>';
+ const gain=full.auc-best.auc;
+ let h='<p>Each 2\u00b0 zone is scored on whether it had an M6+ earthquake in a recent 10-year window, using only the history from before that window. Scores are <b>AUC</b>: 0.5 is a coin flip and 1.0 is perfect. Whole regions (30\u00b0 blocks) are held out when testing, so the model is judged on places it has not seen.</p><div class="auc">'+rows.map(arow).join('')+'</div>';
+ h+='<p>About '+Math.round(H.base_rate*100)+'% of zones had an M6+ in the window. The full model scored <b>'+full.auc.toFixed(3)+'</b>; the strongest simpler alternative ('+nm(best)+') scored '+best.auc.toFixed(3)+', a difference of <b>'+(gain>=0?'+':'')+gain.toFixed(3)+'</b>.'
+  +(H.random_cv_auc!=null?' With ordinary random splits the same model scored '+H.random_cv_auc.toFixed(3)+(H.random_cv_auc>full.auc+.005?', so testing on held-out regions is the stricter check.':', so holding out regions did not make it look worse.'):'')+'</p>';
+ const imp=Object.entries(H.importance||{}).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=imp[0]&&imp[0][1]>0?imp[0][1]:1;
+ if(imp.length)h+='<div class="dh2">What drives the score (importance on held-out regions)</div><div class="auc">'+imp.map(([k,v])=>'<div class="arow"><span>'+esc(FEAT[k]||k)+'</span><div class="abar"><i style="width:'+Math.max(2,Math.min(100,v/mx*100))+'%"></i></div><b>'+v.toFixed(3)+'</b></div>').join('')+'</div>';
+ const RC=M.rate_change;if(RC&&RC.table){const f=RC.table.find(r=>r.model==='full')||RC.table[0];h+='<p>The exploratory rate-change model (will an active zone\u2019s M4.5+ rate climb 1.5\u00d7?) is weak, with an AUC of '+f.auc.toFixed(3)+'. Treat it as a hint, not a result.</p>'}
+ h+='<p class="note">Latest weekly run: '+esc(M.generated_at||'unknown')+(M.n_cells?' \u00b7 '+nfmt(M.n_cells)+' zones':'')+'</p>';aboutMetrics.innerHTML=h}
+function aboutOpen(o){aboutBack.classList.toggle('open',o);
+ if(o&&!metTried){metTried=true;fetch('metrics.json').then(r=>r.ok?r.text():null).then(t=>{MET=t?JSON.parse(t.replace(/\bNaN\b/g,'null')):null;renderMetrics()}).catch(()=>{MET=null;renderMetrics()})}}
+aboutBtn.onclick=()=>aboutOpen(true);aboutClose.onclick=()=>aboutOpen(false);aboutBack.onclick=e=>{if(e.target===aboutBack)aboutOpen(false)};
 // ---- intro: click to begin ----
 function begin(){if(!intro.on||intro.t0)return;intro.t0=performance.now();introEl.classList.add('out');wy=8}   // wy = spin burst; friction slows it back down
 introEl.onclick=begin;
@@ -447,18 +566,20 @@ function setZones(j,msg){closeDetail();zones=j;prep();build();src.textContent=ms
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
 onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);if(tour.on)tourPlace(tour.el)};
 globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();fSync();
-if(S.intro){intro.on=intro.hold=true;cam.position.z=intro.z0=innerWidth<innerHeight?300:240;globe.position.x=intro.x0=innerWidth>innerHeight*1.15?55:0;cb.add('intro-on');introEl.style.display='flex'}
+if(S.intro&&!SKIP){intro.on=intro.hold=true;cam.position.z=intro.z0=innerWidth<innerHeight?300:240;globe.position.x=intro.x0=innerWidth>innerHeight*1.15?55:0;cb.add('intro-on');introEl.style.display='flex'}
 prep();level=lvl();build();
-const noLive=()=>{src.textContent='Live data unavailable \u00b7 showing sample zones'};
-fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.');else noLive()}).catch(noLive);
-if(!S.intro&&S.tutorial)setTimeout(()=>tourGo(0),900);   // with the intro screen on, the tutorial starts after you click to begin
+const noModel=()=>{src.textContent='Model data unavailable \u00b7 showing sample zones'};
+fetch('zones.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length)setZones(j,j.length+' zones from the live model.');else noModel()}).catch(noModel).finally(()=>{if(SHARED)applyShared(SHARED)});
+if(!SHARED&&S.live)setLive(true,false);
+if(!SKIP&&!S.intro&&S.tutorial)setTimeout(()=>tourGo(0),900);   // with the intro screen on, the tutorial starts after you click to begin
 let lastT=performance.now();
 function tick(now){const dt=Math.min(.05,(now-lastT)/1000);lastT=now;
  if(tour.on&&tour.i===0)pingUpdate();
+ if(S.live)liveGroup.children.forEach(m=>{if(m.userData.fresh)m.scale.setScalar(m.userData.s*(1+.28*Math.sin(now/260)))});
  if(fly){const k=Math.min(1,(now-fly.t0)/fly.d),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;globe.rotation.y=fly.y0+(fly.yt-fly.y0)*e;globe.rotation.x=fly.x0+(fly.xt-fly.x0)*e;cam.position.z=fly.z0+(fly.zt-fly.z0)*e;relevel();wy=wx=0;lastClick=now;
   if(k>=1){const z=fly.zone;fly=null;const m=dots.children.find(m=>m.userData.keys.includes(z.key));if(m)openDetail(m)}}
  if(intro.t0){const k=Math.min(1,(now-intro.t0)/2400),e=1-Math.pow(1-k,3);cam.position.z=intro.z0+(380-intro.z0)*e;globe.position.x=intro.x0*(1-e);if(k>.5)cb.remove('intro-on');
-  if(k>=1){intro.on=intro.hold=false;intro.t0=0;introEl.style.display='none';relevel();if(S.tutorial)setTimeout(()=>tourGo(0),500)}}
+  if(k>=1){intro.on=intro.hold=false;intro.t0=0;introEl.style.display='none';relevel();if(S.tutorial&&!SKIP)setTimeout(()=>tourGo(0),500)}}
  if(ringOn){const a=1-Math.exp(-dt*16);rx+=(mx-rx)*a;ry+=(my-ry)*a;curRing.style.transform=`translate3d(${rx}px,${ry}px,0) translate(-50%,-50%)`}
  if(!drag){globe.rotation.y+=wy*dt;globe.rotation.x+=wx*dt;
   const k=Math.exp(-FRICTION*dt);wy*=k;wx*=k;if(Math.abs(wy)<.02)wy=0;if(Math.abs(wx)<.02)wx=0;

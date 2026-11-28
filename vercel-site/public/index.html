@@ -131,7 +131,7 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 #introEl p{margin:0 0 10px;max-width:min(460px,88vw);font-size:13.5px;line-height:1.6;color:#d6d1c4}
 #introEl .imut{color:var(--mut);font-size:12.5px}
 .icta{font:500 13px var(--mono);letter-spacing:.06em;margin-bottom:8px}
-.caret{display:inline-block;width:8px;height:15px;background:var(--acc);margin-left:8px;vertical-align:-3px;animation:blink 1.1s steps(2,start) infinite}
+.caret{display:inline-block;width:8px;height:15px;background:var(--acc);margin-left:8px;vertical-align:-3px;animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
 .hud,.gear,.zoomk,#tip{transition:opacity .9s ease .15s}
 .intro-on .hud,.intro-on .gear,.intro-on .zoomk,.intro-on #tip{opacity:0;pointer-events:none}
@@ -215,10 +215,10 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
  <p>Earthquakes are from the <a href="https://earthquake.usgs.gov/data/comcat/" target="_blank" rel="noopener">USGS catalog</a> and its <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener">live feeds</a>. Plate boundaries are from Bird (2003), the <a href="https://doi.org/10.1029/2001GC000252" target="_blank" rel="noopener">PB2002 model</a>. City populations are from <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0). Country borders and coastlines are from <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>. It&rsquo;s built with PostGIS, scikit-learn, and <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>, and the fonts are IBM Plex Mono and Press Start 2P. The code is on <a href="https://github.com/NPan1915/seismic-risk" target="_blank" rel="noopener">GitHub</a>.</p>
 </div></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
-<div id="introEl"><div class="itop"><h1>Seismik</h1><div class="itag">Where the Earth shakes.</div>
- <p>A global earthquake atlas built on 125 years of USGS records. A machine-learning model ranks regions by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
- <p class="imut">A risk ranking, not a prediction.</p></div>
- <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="imut">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
+<div id="introEl"><div class="itop"><h1>Seismik</h1>
+ <p>A global earthquake atlas built using 125 years of USGS records. Our machine learning model displays major seismic zones and live activity, ranks regions by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
+ 
+ <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="icta">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
 <div id="tourBlock"></div><div id="tourHL"></div><div id="tourPing"></div>
 <div class="tourcard glass" id="tourCard" role="dialog" aria-live="polite"><div class="tstep" id="tStep"></div><h3 id="tTitle"></h3><p id="tText"></p><p class="tsub" id="tSub"></p>
  <div class="tbtn"><button class="link" id="tSkip">Skip tour</button><span><button class="btn" id="tBack">Back</button> <button class="btn pri" id="tNext">Next</button></span></div></div>

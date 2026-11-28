@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismos</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Seismik</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -18,7 +18,8 @@ body.go{animation-play-state:running}
 @keyframes pageIn{to{opacity:1}}
 @media (prefers-reduced-motion:reduce){body{opacity:1;animation:none}}
 /* corner readout */
-.hud{position:fixed;left:18px;top:calc(16px + env(safe-area-inset-top,0px));max-width:calc(100% - 100px);text-shadow:0 1px 3px #000}
+.lcol{position:fixed;left:16px;top:calc(16px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:flex-start;gap:8px;max-width:min(380px,calc(100% - 110px));z-index:5}
+.hud{padding-left:2px;text-shadow:0 1px 3px #000}
 .hud p{margin:0}#src{color:var(--fg)}#cnt{font:11.5px var(--mono);color:var(--mut);margin-top:2px}
 .row2{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
 #tip{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:8px 12px;max-width:min(420px,calc(100% - 100px));font-size:12.5px}
@@ -84,9 +85,9 @@ input[type=range]::-moz-range-thumb{width:10px;height:16px;border:0;border-radiu
 .c-ui #curRing{width:18px;height:18px;border-color:rgba(232,228,218,.6)}
 .c-out #curDot,.c-out #curRing{opacity:0}
 /* search & filter panel (left) */
-.fbtn{position:fixed;left:16px;top:calc(62px + env(safe-area-inset-top,0px));padding:7px 12px;cursor:pointer;font-size:12.5px}.fbtn:hover{border-color:var(--mut)}
+.fbtn{padding:7px 12px;cursor:pointer;font-size:12.5px}.fbtn:hover{border-color:var(--mut)}
 .f-open .fbtn{display:none}
-.fpanel{position:fixed;left:16px;top:calc(62px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:340px;max-width:calc(100% - 32px);z-index:30;display:flex;flex-direction:column;padding:14px 16px 12px;
+.fpanel{position:fixed;left:16px;top:calc(var(--lh,46px) + 24px + env(safe-area-inset-top,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:340px;max-width:calc(100% - 32px);z-index:30;display:flex;flex-direction:column;padding:14px 16px 12px;
  opacity:0;visibility:hidden;transform:translateX(-14px);transition:opacity .22s,transform .22s,visibility .22s}
 .fpanel.open{opacity:1;visibility:visible;transform:none}
 .fhead{display:flex;align-items:baseline;gap:10px;padding-right:30px}.fhead b{font:500 16px var(--head)}#fCount{color:var(--mut);font-size:12px}
@@ -116,15 +117,10 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 #liveLine{font:11.5px var(--mono);color:var(--acc);margin-top:2px}
 #aboutBack{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(5,6,8,.74);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
 #aboutBack.open{opacity:1;visibility:visible}
-.about{position:relative;width:min(680px,100%);max-height:100%;overflow:auto;padding:22px 24px 18px}
+.about{position:relative;width:min(640px,100%);max-height:100%;overflow:auto;padding:22px 24px 18px}
 .about h2{font:500 17px var(--head);margin:0 28px 2px 0}.about .sub{color:var(--mut);font-size:12px}
 .about h3{font:500 13px var(--head);margin:20px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
-.about p,.about li{color:#cfcabd}.about ul{margin:6px 0;padding-left:18px}.about li{margin:5px 0}.about a{color:var(--acc)}
-.warn{border:1px solid var(--rule);border-left:3px solid var(--acc);padding:10px 12px;margin:14px 0;color:var(--fg);line-height:1.55}
-.auc{margin:8px 0}.arow{display:grid;grid-template-columns:minmax(0,1fr) 110px 46px;gap:10px;align-items:center;padding:5px 0;border-bottom:1px solid var(--rule)}
-.abar{height:6px;background:var(--track)}.abar i{display:block;height:100%;background:var(--mut)}
-.arow b{font-weight:500;text-align:right}.arow.hl span,.arow.hl b{color:var(--acc)}.arow.hl .abar i{background:var(--acc)}
-.dh2{font-size:12px;color:var(--mut);margin:14px 0 2px}
+.about p{color:#cfcabd;margin:9px 0;line-height:1.65}.about a{color:var(--acc)}
 .tbar,.tb{transition:opacity .9s ease .15s,border-color .15s}.intro-on .tbar{opacity:0;pointer-events:none}
 /* intro screen */
 #introEl{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;justify-content:space-between;padding:clamp(22px,4.5vw,56px);cursor:pointer;
@@ -152,7 +148,7 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
 .tstep{font:500 10.5px var(--mono);color:var(--acc);min-height:12px}
 .tbtn{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
 </style></head><body>
-<div class="hud"><p id="src"></p><p id="cnt"></p><p id="liveLine"></p></div>
+<div class="lcol" id="lcol"><div class="hud"><p id="src"></p><p id="cnt"></p><p id="liveLine"></p></div><button class="fbtn glass" id="fBtn">Search &amp; filter</button></div>
 <div class="tbar"><button class="tb glass" id="liveBtn" aria-pressed="false"><i class="ldot"></i><span id="liveTxt">Live</span></button><button class="tb glass" id="aboutBtn">About</button></div>
 <button class="gear glass" id="gear" aria-label="Settings" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
 <div class="panel glass" id="panel" role="dialog" aria-label="Settings">
@@ -178,7 +174,6 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
  <div class="row"><span>Your own data</span><label class="btn">Load zones.json<input id="f" type="file" accept=".json" hidden></label></div>
 </div>
 <aside class="dpanel glass" id="detail" aria-hidden="true"><button class="dx" id="dClose" aria-label="Close panel">&times;</button><div id="dBody"></div></aside>
-<button class="fbtn glass" id="fBtn">Search &amp; filter</button>
 <aside class="fpanel glass" id="fPanel" aria-label="Search and filter zones">
  <div class="fhead"><b>Explore</b><span id="fCount"></span><button class="fx" id="fClose" aria-label="Close">&times;</button></div>
  <div class="fsearch"><input id="fQ" type="search" placeholder="Search a country or area" autocomplete="off" spellcheck="false"><div class="sugg" id="fSugg"></div></div>
@@ -200,33 +195,27 @@ select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);border-
  </div>
 </aside>
 <div class="zoomk"><button class="glass" id="zi" aria-label="Zoom in">+</button><button class="glass" id="zo" aria-label="Zoom out">&minus;</button></div>
-<div id="aboutBack"><div class="about glass" id="about" role="dialog" aria-modal="true" aria-label="About Seismos">
+<div id="aboutBack"><div class="about glass" id="about" role="dialog" aria-modal="true" aria-label="About Seismik">
  <button class="fx" id="aboutClose" aria-label="Close">&times;</button>
- <h2>About Seismos</h2><div class="sub">Where the Earth shakes. A global earthquake atlas and risk ranking.</div>
- <div class="warn"><b>A ranking, not a prediction.</b> Seismos compares regions by how often large earthquakes have struck them and by what a model learned from that history. It cannot say when or where any particular earthquake will happen, and it must not be used for safety, evacuation, construction, insurance or emergency decisions. For official guidance, see the USGS and your local emergency agency.</div>
+ <h2>About Seismik</h2>
+ <p>Hey! Seismik is a project I built to explore where earthquakes happen around the world and which places might be most at risk. It takes about 125 years of earthquake records from the USGS, runs them through a machine learning model, and puts everything on this globe so you can poke around.</p>
+ <h3>Please read this first</h3>
+ <p>Seismik ranks places. It does not predict earthquakes. Nobody can say when or where the next one will hit, and this site definitely can&rsquo;t either. The scores just compare regions based on what has already happened there. Please don&rsquo;t use it to make safety, evacuation, building, or insurance decisions. If you need real guidance, go to the USGS or your local emergency agency.</p>
  <h3>What the numbers mean</h3>
- <ul><li><b>Risk</b>: the model's score for an M6+ earthquake in a 2&deg; zone within the next 10 years. A relative ranking, not a probability.</li>
- <li><b>Volatility</b>: how erratic a zone's seismic behavior is (spread of magnitudes plus recent activity), shown as a percentile among all zones.</li>
- <li><b>Human impact</b>: risk combined with the number of people within 100 km, to show where a big earthquake would affect the most people.</li>
- <li><b>Rate-rise chance</b>: an exploratory estimate that a zone's M4.5+ rate climbs to 1.5&times; within 10 years.</li>
- <li><b>Live layer</b>: real earthquakes from the USGS feed for the last 24 hours. It is not part of the model.</li></ul>
- <h3>How well does it work?</h3><div id="aboutMetrics"><p class="note">Loading validation results&hellip;</p></div>
- <h3>Limits</h3>
- <ul><li>Before 1973 the dataset only includes M5.5 and larger; nothing before 1900 is included, so counts are biased toward recent decades.</li>
- <li>Aftershock clusters are not removed, which inflates the activity of zones after a big quake.</li>
- <li>Zones are 2&deg; &times; 2&deg; cells (about 220 km). Each gets one country label; offshore zones are labeled with the nearest coast.</li>
- <li>People are counted from city populations (cities of 15,000+) within 100 km. Rural population, building quality, soil and tsunamis are not modeled.</li>
- <li>Model scores are class-balanced, so they run high. Use them to compare places, not as chances.</li></ul>
- <h3>Data and credits</h3>
- <ul><li>Earthquakes: <a href="https://earthquake.usgs.gov/data/comcat/" target="_blank" rel="noopener">USGS ComCat catalog</a> and <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener">live feeds</a></li>
- <li>Plate boundaries: Bird (2003), <a href="https://doi.org/10.1029/2001GC000252" target="_blank" rel="noopener">PB2002</a></li>
- <li>City populations: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)</li>
- <li>Borders and coastlines: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> (public domain)</li>
- <li>Built with PostGIS, scikit-learn and <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>; fonts IBM Plex Mono and Press Start 2P (Google Fonts, OFL)</li>
- <li><a href="https://github.com/NPan1915/seismic-risk" target="_blank" rel="noopener">Source code on GitHub</a></li></ul>
+ <p><b>Risk</b> is the model&rsquo;s score for a magnitude 6+ earthquake in a zone over the next 10 years. Zones are 2 degree by 2 degree squares, which is about 220 km across. It&rsquo;s a ranking, not a real probability, and the scores run a little high because the model is tuned to catch rare events.</p>
+ <p><b>Volatility</b> is basically how unpredictable a zone is: how much its earthquake sizes vary and how active it has been lately. It&rsquo;s shown as a percentile, so 90th means more volatile than 90% of all zones.</p>
+ <p><b>Human impact</b> mixes risk with how many people live within 100 km, so it shows where a big earthquake would affect the most people.</p>
+ <p><b>Rate-rise chance</b> is an experimental guess at whether a zone&rsquo;s earthquake activity will go up by 1.5 times or more. It&rsquo;s pretty weak, so treat it as a hint.</p>
+ <p>The <b>Live</b> button shows real earthquakes from the last 24 hours, straight from the USGS. That part is separate from the model.</p>
+ <h3>Does the model actually work?</h3>
+ <div id="aboutMetrics"><p>Loading the test results&hellip;</p></div>
+ <h3>Stuff to keep in mind</h3>
+ <p>The data isn&rsquo;t perfect. Before 1973 only magnitude 5.5 and up got recorded reliably, and I only have data back to 1900, so everything leans toward recent decades. Aftershocks aren&rsquo;t filtered out, so a zone can look extra busy right after a big quake. Each zone gets one country label, and offshore zones get the nearest coast, so a few labels are a little off. People are counted from city populations (cities of 15,000+) within 100 km, which misses rural areas and ignores building quality, soil, and tsunamis.</p>
+ <h3>Where the data comes from</h3>
+ <p>Earthquakes are from the <a href="https://earthquake.usgs.gov/data/comcat/" target="_blank" rel="noopener">USGS catalog</a> and its <a href="https://earthquake.usgs.gov/earthquakes/feed/" target="_blank" rel="noopener">live feeds</a>. Plate boundaries are from Bird (2003), the <a href="https://doi.org/10.1029/2001GC000252" target="_blank" rel="noopener">PB2002 model</a>. City populations are from <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0). Country borders and coastlines are from <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>. It&rsquo;s built with PostGIS, scikit-learn, and <a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a>, and the fonts are IBM Plex Mono and Press Start 2P. The code is on <a href="https://github.com/NPan1915/seismic-risk" target="_blank" rel="noopener">GitHub</a>.</p>
 </div></div>
 <div id="tip" class="glass">Hover a circle or dot</div>
-<div id="introEl"><div class="itop"><h1>Seismos</h1><div class="itag">Where the Earth shakes.</div>
+<div id="introEl"><div class="itop"><h1>Seismik</h1><div class="itag">Where the Earth shakes.</div>
  <p>A global earthquake atlas built on 125 years of USGS records. A machine-learning model ranks regions by how likely they are to see a major quake in the next decade, and shows how many people live nearby.</p>
  <p class="imut">A risk ranking, not a prediction.</p></div>
  <div class="ibot"><div class="icta">Click anywhere to begin<span class="caret"></span></div><div class="imut">PostGIS &middot; scikit-learn &middot; three.js &middot; USGS data</div></div></div>
@@ -509,19 +498,18 @@ liveSw.onchange=()=>setLive(liveSw.checked);liveBtn.onclick=()=>setLive(!S.live)
 lmR.oninput=()=>{change({lm:+lmR.value});buildLive()};
 // ---- about / methodology (reads the validation numbers from metrics.json) ----
 let MET=null,metTried=false;
-const FEAT={n_m6_hist:'Past M6+ count',n_recent10:'M4.5+ events, last 10 yr',n_prior10:'M4.5+ events, prior 10 yr',n_hist:'Total past events',depth_mean:'Average depth',mag_mean:'Average magnitude',mag_max:'Largest magnitude',depth_std:'Depth variation',mag_std:'Magnitude variation',dist_boundary_km:'Distance to plate boundary',rate_ratio:'Recent vs prior rate'};
-function renderMetrics(){const M=MET;if(!M||!M.hazard||!M.hazard.table){aboutMetrics.innerHTML='<p class="note">Validation results (metrics.json) are not available in this view. The training pipeline produces them every week.</p>';return}
- const H=M.hazard,rows=H.table,full=rows.find(r=>/^D\./.test(r.model))||rows[0],others=rows.filter(r=>r!==full),best=others.reduce((a,b)=>b.auc>a.auc?b:a,others[0]||full);
- const nm=r=>esc(r.model.replace(/^[A-D]\.\s*/,'').replace(/^heuristic:\s*/,'baseline: '));
- const arow=r=>'<div class="arow'+(r===full?' hl':'')+'"><span>'+nm(r)+'</span><div class="abar"><i style="width:'+Math.max(0,Math.min(100,(r.auc-.5)/.5*100))+'%"></i></div><b>'+r.auc.toFixed(3)+'</b></div>';
- const gain=full.auc-best.auc;
- let h='<p>Each 2\u00b0 zone is scored on whether it had an M6+ earthquake in a recent 10-year window, using only the history from before that window. Scores are <b>AUC</b>: 0.5 is a coin flip and 1.0 is perfect. Whole regions (30\u00b0 blocks) are held out when testing, so the model is judged on places it has not seen.</p><div class="auc">'+rows.map(arow).join('')+'</div>';
- h+='<p>About '+Math.round(H.base_rate*100)+'% of zones had an M6+ in the window. The full model scored <b>'+full.auc.toFixed(3)+'</b>; the strongest simpler alternative ('+nm(best)+') scored '+best.auc.toFixed(3)+', a difference of <b>'+(gain>=0?'+':'')+gain.toFixed(3)+'</b>.'
-  +(H.random_cv_auc!=null?' With ordinary random splits the same model scored '+H.random_cv_auc.toFixed(3)+(H.random_cv_auc>full.auc+.005?', so testing on held-out regions is the stricter check.':', so holding out regions did not make it look worse.'):'')+'</p>';
- const imp=Object.entries(H.importance||{}).sort((a,b)=>b[1]-a[1]).slice(0,6),mx=imp[0]&&imp[0][1]>0?imp[0][1]:1;
- if(imp.length)h+='<div class="dh2">What drives the score (importance on held-out regions)</div><div class="auc">'+imp.map(([k,v])=>'<div class="arow"><span>'+esc(FEAT[k]||k)+'</span><div class="abar"><i style="width:'+Math.max(2,Math.min(100,v/mx*100))+'%"></i></div><b>'+v.toFixed(3)+'</b></div>').join('')+'</div>';
- const RC=M.rate_change;if(RC&&RC.table){const f=RC.table.find(r=>r.model==='full')||RC.table[0];h+='<p>The exploratory rate-change model (will an active zone\u2019s M4.5+ rate climb 1.5\u00d7?) is weak, with an AUC of '+f.auc.toFixed(3)+'. Treat it as a hint, not a result.</p>'}
- h+='<p class="note">Latest weekly run: '+esc(M.generated_at||'unknown')+(M.n_cells?' \u00b7 '+nfmt(M.n_cells)+' zones':'')+'</p>';aboutMetrics.innerHTML=h}
+const FEAT={n_m6_hist:'the number of past M6+ quakes',n_recent10:'how many M4.5+ quakes happened in the last 10 years',n_prior10:'how many happened in the 10 years before that',n_hist:'the total number of past quakes',depth_mean:'average depth',mag_mean:'average magnitude',mag_max:'the largest magnitude',depth_std:'how much the depth varies',mag_std:'how much the magnitude varies',dist_boundary_km:'distance to a plate boundary',rate_ratio:'recent activity compared to before'};
+const plain=r=>{const m=r.model.replace(/^[A-D]\.\s*/,'');return /^heuristic: historical/.test(m)?'just counting past M6+ quakes':/^heuristic: closeness/.test(m)?'just picking zones near plate boundaries':/^rate \+ boundary/.test(m)?'past quake rates plus plate boundaries':/^rate only/.test(m)?'a model that only uses past quake rates':/^boundary only/.test(m)?'a model that only uses plate boundaries':m};
+function renderMetrics(){const M=MET;
+ if(!M||!M.hazard||!M.hazard.table||!M.hazard.table.length){aboutMetrics.innerHTML='<p>The test results file (metrics.json) didn&rsquo;t load, so I can&rsquo;t show the numbers right now. The training script rewrites it every week.</p>';return}
+ const H=M.hazard,rows=H.table,full=rows.find(r=>/^D\./.test(r.model))||rows[0],others=rows.filter(r=>r!==full),best=others.length?others.reduce((a,b)=>b.auc>a.auc?b:a):null,gain=best?full.auc-best.auc:0;
+ let h='<p>Here&rsquo;s how I tested it. I picked a recent 10-year window and asked: using only the older data, can the model tell which zones ended up with an M6+ quake? It gets graded with AUC, where 0.5 is basically a coin flip and 1.0 is perfect. I also held out whole 30 degree chunks of the world, so it was graded on places it had never seen. That&rsquo;s harder than a normal random split.</p>';
+ h+='<p>The full model scored '+full.auc.toFixed(3)+'.'+(best?' The best simple alternative was '+esc(plain(best))+', which scored '+best.auc.toFixed(3)+', so the model is '+(gain>=0?'ahead':'behind')+' by '+Math.abs(gain).toFixed(3)+'. '+(Math.abs(gain)<.03?'Honestly that&rsquo;s a small gap. Most of what the model knows is just that big earthquakes tend to happen where big earthquakes already happened.':gain>=.03?'That&rsquo;s a pretty solid improvement over the simple options.':'So the simple option actually did better, which is worth knowing.'):'')+(H.base_rate!=null?' For context, about '+Math.round(H.base_rate*100)+'% of zones had an M6+ in the test window.':'')+'</p>';
+ if(H.random_cv_auc!=null)h+='<p>I also tried a regular random split, which scored '+H.random_cv_auc.toFixed(3)+'. '+(H.random_cv_auc>full.auc+.005?'That&rsquo;s higher, which is exactly why I tested on held-out regions: random splits can make a model look better than it really is.':'That&rsquo;s not higher, so testing on held-out regions didn&rsquo;t make the model look worse.')+'</p>';
+ const imp=Object.entries(H.importance||{}).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k])=>FEAT[k]||k);
+ if(imp.length)h+='<p>The things the model leaned on most were '+esc(imp.length>1?imp.slice(0,-1).join(', ')+' and '+imp[imp.length-1]:imp[0])+'.</p>';
+ const RC=M.rate_change;if(RC&&RC.table&&RC.table.length){const f=RC.table.find(r=>r.model==='full')||RC.table[0];h+='<p>There&rsquo;s also an experimental model for &ldquo;will this zone get more active?&rdquo;. It scored '+f.auc.toFixed(3)+', which is weak, so treat that one as a rough hint.</p>'}
+ h+='<p>Latest weekly run: '+esc(M.generated_at||'unknown')+(M.n_cells?', covering '+nfmt(M.n_cells)+' zones':'')+'.</p>';aboutMetrics.innerHTML=h}
 function aboutOpen(o){aboutBack.classList.toggle('open',o);
  if(o&&!metTried){metTried=true;fetch('metrics.json').then(r=>r.ok?r.text():null).then(t=>{MET=t?JSON.parse(t.replace(/\bNaN\b/g,'null')):null;renderMetrics()}).catch(()=>{MET=null;renderMetrics()})}}
 aboutBtn.onclick=()=>aboutOpen(true);aboutClose.onclick=()=>aboutOpen(false);aboutBack.onclick=e=>{if(e.target===aboutBack)aboutOpen(false)};
@@ -535,6 +523,8 @@ function setZones(j,msg){closeDetail();zones=j;prep();build();src.textContent=ms
 f.onchange=async()=>{try{const j=JSON.parse(await f.files[0].text());setZones(j,j.length+' zones loaded from your model.')}catch(e){src.textContent='Could not read that file.'}};
 onresize=()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);if(tour.on)tourPlace(tour.el)};
 globe.rotation.y=-2.4;globe.rotation.x=.3;apply();syncUI();fSync();
+const setLH=()=>document.documentElement.style.setProperty('--lh',lcol.offsetHeight+'px');   // the filter panel opens just below the readout, however tall it gets
+if(typeof ResizeObserver==='function')new ResizeObserver(setLH).observe(lcol);setLH();
 if(S.intro){intro.on=intro.hold=true;cam.position.z=intro.z0=innerWidth<innerHeight?300:240;globe.position.x=intro.x0=innerWidth>innerHeight*1.15?55:0;cb.add('intro-on');introEl.style.display='flex'}
 prep();level=lvl();build();
 const noModel=()=>{src.textContent='Model data unavailable \u00b7 showing sample zones'};
